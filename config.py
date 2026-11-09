@@ -18,11 +18,15 @@ SYMBOLS.update(METALS)
 # ---------- Timeframes ----------
 # name: (yahoo interval, history to download, resample rule or None)
 TIMEFRAMES = {
+    "5m":  ("5m", "20d", None),
     "15m": ("15m", "30d", None),
     "1h":  ("60m", "180d", None),
     "4h":  ("60m", "360d", "4h"),
     "1d":  ("1d", "5y", None),
 }
+
+# A signal is only sent if its candle closed at most this long ago (GitHub can start runs late)
+MAX_SIGNAL_AGE = {"5m": "12min", "15m": "30min", "1h": "90min", "4h": "5h", "1d": "3D"}
 
 # ---------- Strategy ----------
 # "auto" = each pair/timeframe uses the strategy that backtested best on its own recent history.
