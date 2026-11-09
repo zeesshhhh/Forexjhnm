@@ -3,6 +3,11 @@ on:
   schedule:
     - cron: "*/15 * * * 0-5"   # every 15 min, Sun-Fri (forex market hours, UTC)
   workflow_dispatch:            # lets you press "Run workflow" by hand
+  push:                         # also runs right after you upload or change the bot files
+    paths:
+      - ".github/workflows/signals.yml"
+      - "*.py"
+      - "requirements.txt"
 permissions:
   contents: write
 concurrency: signals
