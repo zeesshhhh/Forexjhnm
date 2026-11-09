@@ -1,1 +1,56 @@
-{"signals": []}
+{
+ "updated": "2026-11-09T17:47:56.330465+00:00",
+ "signals": [
+  {
+   "pair": "CADCHF",
+   "tf": "15m",
+   "side": "SELL",
+   "strategy": "ema_rsi",
+   "entry": 0.58106,
+   "sl": 0.582642,
+   "tp": 0.577896,
+   "rsi": 46.8,
+   "decimals": 5,
+   "bar_time": "2026-11-09T17:30:00+00:00",
+   "stats": {
+    "trades": 23,
+    "win_rate": 47.8,
+    "profit_factor": 1.71
+   }
+  },
+  {
+   "pair": "EURGBP",
+   "tf": "1h",
+   "side": "SELL",
+   "strategy": "bollinger",
+   "entry": 0.83484,
+   "sl": 0.835688,
+   "tp": 0.833144,
+   "rsi": 57.9,
+   "decimals": 5,
+   "bar_time": "2026-11-09T16:00:00+00:00",
+   "stats": {
+    "trades": 155,
+    "win_rate": 37.4,
+    "profit_factor": 1.2
+   }
+  },
+  {
+   "pair": "EURNZD",
+   "tf": "1h",
+   "side": "BUY",
+   "strategy": "macd",
+   "entry": 1.99441,
+   "sl": 1.990008,
+   "tp": 2.003214,
+   "rsi": 37.3,
+   "decimals": 5,
+   "bar_time": "2026-11-09T16:00:00+00:00",
+   "stats": {
+    "trades": 41,
+    "win_rate": 41.5,
+    "profit_factor": 1.42
+   }
+  }
+ ]
+}
