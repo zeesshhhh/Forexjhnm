@@ -1,0 +1,33 @@
+plugins {
+    id 'com.android.application'
+}
+
+def buildNumber = System.getenv('GITHUB_RUN_NUMBER') ?: '1'
+
+android {
+    namespace 'com.ameet.fxsignals'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'com.ameet.fxsignals'
+        minSdk 26
+        targetSdk 34
+        versionCode Integer.parseInt(buildNumber)
+        versionName "1.0.${buildNumber}"
+    }
+
+    // Fixed signing key, so each new version installs over the old one.
+    signingConfigs {
+        debug {
+            storeFile file('debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+    }
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
+    }
+}
