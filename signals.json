@@ -1,6 +1,25 @@
 {
- "updated": "2026-11-09T17:47:56.330465+00:00",
+ "updated": "2026-11-09T18:12:54.971086+00:00",
  "signals": [
+  {
+   "id": "NZDJPY|15m|2026-11-09T17:45:00+00:00",
+   "pair": "NZDJPY",
+   "tf": "15m",
+   "side": "SELL",
+   "strategy": "bollinger",
+   "entry": 88.777,
+   "sl": 88.871298,
+   "tp": 88.588405,
+   "rsi": 62.7,
+   "decimals": 3,
+   "bar_time": "2026-11-09T17:45:00+00:00",
+   "stats": {
+    "trades": 83,
+    "win_rate": 37.3,
+    "profit_factor": 1.19
+   },
+   "status": "open"
+  },
   {
    "pair": "CADCHF",
    "tf": "15m",
@@ -16,7 +35,9 @@
     "trades": 23,
     "win_rate": 47.8,
     "profit_factor": 1.71
-   }
+   },
+   "id": "CADCHF|15m|2026-11-09T17:30:00+00:00",
+   "status": "open"
   },
   {
    "pair": "EURGBP",
@@ -33,7 +54,9 @@
     "trades": 155,
     "win_rate": 37.4,
     "profit_factor": 1.2
-   }
+   },
+   "id": "EURGBP|1h|2026-11-09T16:00:00+00:00",
+   "status": "open"
   },
   {
    "pair": "EURNZD",
@@ -50,7 +73,9 @@
     "trades": 41,
     "win_rate": 41.5,
     "profit_factor": 1.42
-   }
+   },
+   "id": "EURNZD|1h|2026-11-09T16:00:00+00:00",
+   "status": "open"
   }
  ]
 }
