@@ -3,7 +3,7 @@ import pandas as pd
 
 import config
 
-INTERVAL_LEN = {"15m": "15min", "1h": "1h", "4h": "4h", "1d": "1D"}
+INTERVAL_LEN = {"5m": "5min", "15m": "15min", "1h": "1h", "4h": "4h", "1d": "1D"}
 
 
 def get_candles(pair, tf):
