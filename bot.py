@@ -82,8 +82,9 @@ def check(pair, tf, df):
     if side == 0:
         return None
     bar_time = df.index[-1]
-    # ignore stale bars (e.g. weekend / data delay): last closed bar must be recent
-    if pd.Timestamp.now(tz="UTC") - bar_time > 3 * pd.Timedelta(INTERVAL_LEN[tf]) + pd.Timedelta("1h"):
+    # ignore stale candles (weekend, data delay, late GitHub run): it must have closed recently
+    closed_at = bar_time + pd.Timedelta(INTERVAL_LEN[tf])
+    if pd.Timestamp.now(tz="UTC") - closed_at > pd.Timedelta(getattr(config, "MAX_SIGNAL_AGE", {}).get(tf, "2h")):
         return None
     price, a = df["Close"].iloc[-1], atr(df).iloc[-1]
     return {
@@ -115,36 +116,115 @@ def format_signal(s):
     return title, "\n".join(lines)
 
 
-def save_history(new_signals, path="signals.json", keep=300):
-    """signals.json is what the Android app reads (newest first)."""
+# ---------------- signal history + results (read by the Android app) ----------------
+HISTORY_FILE = "signals.json"
+KEEP_SIGNALS = 300
+# a trade that hits neither SL nor TP is closed at market after this many candles
+MAX_OPEN_BARS = {"5m": 288, "15m": 192, "1h": 168, "4h": 120, "1d": 60}
+
+
+def pip_size(pair):
+    if pair == "XAUUSD":
+        return 0.1
+    if pair == "XAGUSD":
+        return 0.01
+    return 0.01 if "JPY" in pair else 0.0001
+
+
+def load_history():
     try:
-        with open(path) as f:
-            old = json.load(f).get("signals", [])
+        with open(HISTORY_FILE) as f:
+            return json.load(f).get("signals", [])
     except Exception:
-        old = []
-    rows = []
-    for s in new_signals:
-        st = s["stats"]
-        rows.append({
-            "pair": s["pair"], "tf": s["tf"], "side": s["side"], "strategy": s["strategy"],
-            "entry": round(float(s["entry"]), 6), "sl": round(float(s["sl"]), 6), "tp": round(float(s["tp"]), 6),
-            "rsi": round(float(s["rsi"]), 1), "decimals": decimals(s["pair"]), "bar_time": s["bar_time"],
-            "stats": None if not st else {
-                "trades": st["trades"], "win_rate": round(st["win_rate"], 1),
-                "profit_factor": round(min(st["profit_factor"], 99.0), 2),   # JSON can't hold infinity
-            },
-        })
-    data = {"updated": pd.Timestamp.now(tz="UTC").isoformat(), "signals": (rows + old)[:keep]}
-    with open(path, "w") as f:
+        return []
+
+
+def save_history(rows):
+    data = {"updated": pd.Timestamp.now(tz="UTC").isoformat(), "signals": rows[:KEEP_SIGNALS]}
+    with open(HISTORY_FILE, "w") as f:
         json.dump(data, f, indent=1)
+
+
+def to_row(s):
+    st = s["stats"]
+    return {
+        "id": f"{s['pair']}|{s['tf']}|{s['bar_time']}",
+        "pair": s["pair"], "tf": s["tf"], "side": s["side"], "strategy": s["strategy"],
+        "entry": round(float(s["entry"]), 6), "sl": round(float(s["sl"]), 6), "tp": round(float(s["tp"]), 6),
+        "rsi": round(float(s["rsi"]), 1), "decimals": decimals(s["pair"]), "bar_time": s["bar_time"],
+        "stats": None if not st else {
+            "trades": st["trades"], "win_rate": round(st["win_rate"], 1),
+            "profit_factor": round(min(st["profit_factor"], 99.0), 2),   # JSON can't hold infinity
+        },
+        "status": "open",
+    }
+
+
+def close_trade(row, status, price, when):
+    side = 1 if row["side"] == "BUY" else -1
+    risk = abs(row["entry"] - row["sl"]) or 1e-9
+    row.update({
+        "status": status,                       # "tp", "sl" or "expired"
+        "exit": round(float(price), 6),
+        "closed_at": pd.Timestamp(when).isoformat(),
+        "pips": round(side * (price - row["entry"]) / pip_size(row["pair"]), 1),
+        "result_r": round(side * (price - row["entry"]) / risk, 2),
+    })
+
+
+def update_results(rows, pair, tf, df):
+    """Checks this pair/timeframe's open signals against new candles. Returns closed rows."""
+    closed = []
+    if df is None or df.empty:
+        return closed
+    for row in rows:
+        if row.get("pair") != pair or row.get("tf") != tf or row.get("status", "open") != "open":
+            continue
+        after = df[df.index > pd.Timestamp(row["bar_time"])]     # candles after the signal candle
+        buy = row["side"] == "BUY"
+        for t, c in after.iterrows():
+            hit_sl = c["Low"] <= row["sl"] if buy else c["High"] >= row["sl"]
+            hit_tp = c["High"] >= row["tp"] if buy else c["Low"] <= row["tp"]
+            if hit_sl:                       # both in one candle counts as SL (same rule as backtest)
+                close_trade(row, "sl", row["sl"], t)
+                break
+            if hit_tp:
+                close_trade(row, "tp", row["tp"], t)
+                break
+        else:
+            if len(after) >= MAX_OPEN_BARS.get(tf, 200):
+                close_trade(row, "expired", after["Close"].iloc[-1], after.index[-1])
+        if row.get("status", "open") != "open":
+            closed.append(row)
+    return closed
+
+
+def format_result(row):
+    d = row.get("decimals", 5)
+    icon = {"tp": "✅ TP hit", "sl": "❌ SL hit", "expired": "⏱ Closed (time limit)"}[row["status"]]
+    title = f"{icon}: {row['pair']} {row['side']} ({row['tf']})"
+    body = (f"Result: {row['pips']:+.1f} pips ({row['result_r']:+.2f}R)\n"
+            f"Entry {row['entry']:.{d}f} → Exit {row['exit']:.{d}f}")
+    return title, body
 
 
 def scan(dry=False):
     state = load_state()
-    found, new_signals = 0, []
+    rows = load_history()
+    for r in rows:
+        r.setdefault("id", f"{r['pair']}|{r['tf']}|{r['bar_time']}")
+        r.setdefault("status", "open")
+    found, changed = 0, False
     for tf in config.TIMEFRAMES:
         for pair in config.SYMBOLS:
-            sig = check(pair, tf, get_candles(pair, tf))
+            df = get_candles(pair, tf)
+            for row in update_results(rows, pair, tf, df):
+                changed = True
+                title, body = format_result(row)
+                print(f"\n{title}\n{body}")
+                if not dry:
+                    notify(title, body, priority="default", tags="white_check_mark" if row["status"] == "tp" else "x")
+            sig = check(pair, tf, df)
             if not sig:
                 continue
             key = f"{pair}|{tf}|{sig['bar_time']}"
@@ -155,12 +235,13 @@ def scan(dry=False):
             if not dry:
                 notify(title, body, tags="green_circle" if sig["side"] == "BUY" else "red_circle")
             state[key] = sig["bar_time"]
-            new_signals.append(sig)
+            rows.insert(0, to_row(sig))
             found += 1
+            changed = True
     if not dry:
         save_state(state)
-        if new_signals:
-            save_history(new_signals)
+        if changed:
+            save_history(rows)
     print(f"\n[{pd.Timestamp.now(tz='UTC'):%Y-%m-%d %H:%M} UTC] scan done, {found} new signal(s).")
     return found
 
