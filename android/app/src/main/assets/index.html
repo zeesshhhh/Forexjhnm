@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FX Signals</title>
+<style>
+  :root { --bg:#0f1419; --card:#182029; --line:#26313d; --text:#e6edf3; --mute:#8b98a5;
+          --buy:#22c55e; --sell:#ef4444; --accent:#3b82f6; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; background:var(--bg); color:var(--text);
+         font:15px/1.4 system-ui, -apple-system, Roboto, sans-serif; }
+  header { display:flex; align-items:center; justify-content:space-between; padding:14px 16px 8px; }
+  h1 { font-size:20px; margin:0; }
+  .sub { color:var(--mute); font-size:12px; margin-top:2px; }
+  .hbtns { display:flex; flex:none; }
+  .icon { background:var(--card); border:1px solid var(--line); color:var(--text); width:40px; height:40px;
+          border-radius:12px; font-size:18px; margin-left:8px; }
+  .icon.spin { animation:spin 1s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .chips { display:flex; gap:8px; padding:4px 16px 8px; overflow-x:auto; }
+  .chip { flex:none; padding:7px 14px; border-radius:999px; border:1px solid var(--line);
+          background:var(--card); color:var(--mute); font-size:13px; }
+  .chip.on { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .search { display:block; width:calc(100% - 32px); margin:0 16px 10px; padding:10px 12px; border-radius:12px;
+            border:1px solid var(--line); background:var(--card); color:var(--text); font-size:15px; outline:none; }
+  main { padding:0 16px 24px; }
+  .card { background:var(--card); border:1px solid var(--line); border-left:4px solid var(--buy);
+          border-radius:14px; padding:12px 14px; margin-bottom:10px; }
+  .card.sell { border-left-color:var(--sell); }
+  .top { display:flex; align-items:center; gap:8px; }
+  .pair { font-weight:700; font-size:17px; }
+  .side { font-weight:700; font-size:12px; padding:2px 8px; border-radius:6px; background:rgba(34,197,94,.15); color:var(--buy); }
+  .sell .side { background:rgba(239,68,68,.15); color:var(--sell); }
+  .tf { font-size:12px; color:var(--mute); border:1px solid var(--line); padding:1px 7px; border-radius:6px; }
+  .new { font-size:11px; font-weight:700; color:#000; background:#facc15; padding:1px 6px; border-radius:6px; }
+  .ago { margin-left:auto; color:var(--mute); font-size:12px; }
+  .prices { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:10px 0 8px; }
+  .price { background:var(--bg); border-radius:10px; padding:7px 8px; }
+  .price span { display:block; font-size:11px; color:var(--mute); }
+  .price b { font-size:14px; font-variant-numeric:tabular-nums; }
+  .sl b { color:var(--sell); } .tp b { color:var(--buy); }
+  .meta { color:var(--mute); font-size:12px; }
+  .empty { text-align:center; color:var(--mute); padding:48px 20px; }
+  .empty b { color:var(--text); display:block; font-size:16px; margin-bottom:6px; }
+  .btn { background:var(--accent); color:#fff; border:0; border-radius:12px; padding:12px 18px; font-size:15px; font-weight:600; }
+  .btn.ghost { background:transparent; border:1px solid var(--line); color:var(--text); }
+  #settings { position:fixed; inset:0; background:var(--bg); padding:18px 16px; overflow:auto; z-index:5; }
+  #settings label { display:block; font-size:13px; color:var(--mute); margin:14px 0 6px; }
+  #settings input { width:100%; padding:11px 12px; border-radius:12px; border:1px solid var(--line);
+                    background:var(--card); color:var(--text); font-size:15px; outline:none; }
+  .help { font-size:12px; color:var(--mute); margin-top:6px; }
+  .row { display:flex; gap:10px; margin-top:22px; }
+  .err { background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.4); color:#fca5a5;
+         border-radius:12px; padding:10px 12px; margin:0 16px 10px; font-size:13px; }
+  .foot { text-align:center; color:var(--mute); font-size:11px; padding:6px 16px 20px; }
+  [hidden] { display:none !important; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>FX Signals</h1>
+    <div class="sub" id="sub">Not connected</div>
+  </div>
+  <div class="hbtns">
+    <button class="icon" id="refresh" aria-label="Refresh">&#x27F3;</button>
+    <button class="icon" id="gear" aria-label="Settings">&#x2699;</button>
+  </div>
+</header>
+<div class="chips" id="chips"></div>
+<input class="search" id="search" placeholder="Search pair, e.g. EURUSD or gold" autocomplete="off">
+<div class="err" id="err" hidden></div>
+<main id="list"></main>
+<div class="foot">Signals come from past price patterns and can lose. Not financial advice.</div>
+
+<section id="settings" hidden>
+  <h1>Connect to your bot</h1>
+  <p class="help">The app reads <b>signals.json</b> from the GitHub repository where your bot runs.</p>
+  <label for="s-user">GitHub username</label>
+  <input id="s-user" autocomplete="off" autocapitalize="none" placeholder="e.g. ameetkumar">
+  <label for="s-repo">Repository name</label>
+  <input id="s-repo" autocomplete="off" autocapitalize="none" placeholder="e.g. forex-signal-bot">
+  <label for="s-token">Access token (needed for a private repository)</label>
+  <input id="s-token" type="password" autocomplete="off" autocapitalize="none" placeholder="github_pat_...">
+  <div class="help">GitHub &rarr; Settings &rarr; Developer settings &rarr; Fine-grained tokens &rarr; Generate.
+    Pick only this repository, and give <b>Contents: Read-only</b>. Leave empty if the repository is public.</div>
+  <div class="row">
+    <button class="btn" id="s-save">Save &amp; load</button>
+    <button class="btn ghost" id="s-cancel">Cancel</button>
+  </div>
+</section>
+
+<script>
+(function () {
+  var TFS = ["All", "15m", "1h", "4h", "1d"];
+  var state = { tf: "All", q: "", data: null, loading: false };
+  var $ = function (id) { return document.getElementById(id); };
+
+  // ---------- storage ----------
+  function load(k, d) { try { var v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } }
+  function save(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function cfg() { return { user: load("user", ""), repo: load("repo", ""), token: load("token", "") }; }
+
+  // ---------- network (through the Android bridge) ----------
+  var pending = {}, nextId = 1;
+  window.__httpDone = function (id, status, body) {
+    var p = pending[id]; delete pending[id];
+    if (p) p({ status: status, body: body });
+  };
+  function httpGet(url, token) {
+    return new Promise(function (resolve) {
+      var id = nextId++;
+      pending[id] = resolve;
+      if (window.Android && window.Android.get) {
+        window.Android.get(url, token || "", id);
+      } else {                                   // opened in a normal browser (for testing)
+        var h = { Accept: "application/vnd.github.raw+json" };
+        if (token) h.Authorization = "Bearer " + token;
+        fetch(url, { headers: h, cache: "no-store" })
+          .then(function (r) { return r.text().then(function (t) { window.__httpDone(id, r.status, t); }); })
+          .catch(function (e) { window.__httpDone(id, 0, String(e)); });
+      }
+    });
+  }
+
+  // ---------- helpers ----------
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function fmt(v, d) { return Number(v).toFixed(d); }
+  function ago(iso) {
+    var s = (Date.now() - new Date(iso).getTime()) / 1000;
+    if (!isFinite(s)) return "";
+    if (s < 60) return "just now";
+    if (s < 3600) return Math.floor(s / 60) + "m ago";
+    if (s < 86400) return Math.floor(s / 3600) + "h ago";
+    return Math.floor(s / 86400) + "d ago";
+  }
+  function showErr(msg) { var e = $("err"); e.textContent = msg || ""; e.hidden = !msg; }
+  var NAMES = { XAUUSD: "gold", XAGUSD: "silver" };
+
+  // ---------- render ----------
+  function renderChips() {
+    $("chips").innerHTML = TFS.map(function (t) {
+      return '<button class="chip' + (t === state.tf ? " on" : "") + '" data-tf="' + t + '">' + t + "</button>";
+    }).join("");
+  }
+
+  function render() {
+    var c = cfg(), list = $("list");
+    if (!c.user || !c.repo) {
+      $("sub").textContent = "Not connected";
+      list.innerHTML = '<div class="empty"><b>Connect your bot</b>Enter your GitHub username and repository to see signals.' +
+        '<div class="row" style="justify-content:center"><button class="btn" id="go-settings">Connect</button></div></div>';
+      $("go-settings").onclick = openSettings;
+      return;
+    }
+    var d = state.data;
+    if (!d) {
+      list.innerHTML = '<div class="empty">' + (state.loading ? "Loading signals&hellip;" : "No data yet. Tap &#x27F3; to load.") + "</div>";
+      return;
+    }
+    $("sub").textContent = (d.updated ? "Last signal " + ago(d.updated) + " · " : "") + c.user + "/" + c.repo;
+    var q = state.q.trim().toUpperCase().replace(/[\/\s]/g, "");
+    var rows = (d.signals || []).filter(function (s) {
+      if (state.tf !== "All" && s.tf !== state.tf) return false;
+      if (q && s.pair.indexOf(q) < 0 && (NAMES[s.pair] || "").toUpperCase().indexOf(q) < 0) return false;
+      return true;
+    });
+    if (!rows.length) {
+      list.innerHTML = '<div class="empty"><b>No signals here yet</b>The bot only sends a signal when one of its strategies triggers. ' +
+        "Quiet periods are normal.</div>";
+      return;
+    }
+    list.innerHTML = rows.map(function (s) {
+      var dp = s.decimals == null ? 5 : s.decimals, sell = s.side === "SELL";
+      var fresh = (Date.now() - new Date(s.bar_time).getTime()) < 2 * 3600 * 1000;
+      var st = s.stats ? " · Backtest " + Math.round(s.stats.win_rate) + "% win, PF " + Number(s.stats.profit_factor).toFixed(2) : "";
+      return '<div class="card' + (sell ? " sell" : "") + '">' +
+        '<div class="top"><span class="pair">' + esc(s.pair) + '</span><span class="side">' + esc(s.side) + "</span>" +
+        '<span class="tf">' + esc(s.tf) + "</span>" + (fresh ? '<span class="new">NEW</span>' : "") +
+        '<span class="ago">' + ago(s.bar_time) + "</span></div>" +
+        '<div class="prices">' +
+        '<div class="price" data-copy="' + fmt(s.entry, dp) + '"><span>Entry</span><b>' + fmt(s.entry, dp) + "</b></div>" +
+        '<div class="price sl" data-copy="' + fmt(s.sl, dp) + '"><span>Stop loss</span><b>' + fmt(s.sl, dp) + "</b></div>" +
+        '<div class="price tp" data-copy="' + fmt(s.tp, dp) + '"><span>Take profit</span><b>' + fmt(s.tp, dp) + "</b></div></div>" +
+        '<div class="meta">' + esc(s.strategy) + " · RSI " + Math.round(s.rsi) + st + "</div></div>";
+    }).join("");
+  }
+
+  // ---------- load ----------
+  function refresh() {
+    var c = cfg();
+    if (!c.user || !c.repo || state.loading) { render(); return; }
+    state.loading = true; $("refresh").classList.add("spin"); render();
+    var url = "https://api.github.com/repos/" + encodeURIComponent(c.user) + "/" + encodeURIComponent(c.repo) +
+              "/contents/signals.json";
+    httpGet(url, c.token).then(function (r) {
+      state.loading = false; $("refresh").classList.remove("spin");
+      if (r.status === 200) {
+        try {
+          state.data = JSON.parse(r.body);
+          save("cache", r.body);
+          showErr("");
+        } catch (e) { showErr("signals.json could not be read."); }
+      } else if (r.status === 404) {
+        showErr("signals.json not found. Check the username and repository name. If the repository is private, " +
+                "add a token. The bot creates this file with its first signal.");
+      } else if (r.status === 401) {
+        showErr("GitHub didn't accept the token. Make a new one in Settings.");
+      } else if (r.status === 403 || r.status === 429) {
+        showErr("GitHub is limiting requests. Wait a few minutes, or add a token.");
+      } else if (r.status === 0) {
+        showErr("No internet connection. Showing the last saved signals.");
+      } else {
+        showErr("GitHub error " + r.status + ".");
+      }
+      render();
+    });
+  }
+
+  // ---------- settings ----------
+  function openSettings() {
+    var c = cfg();
+    $("s-user").value = c.user; $("s-repo").value = c.repo; $("s-token").value = c.token;
+    $("settings").hidden = false;
+  }
+  $("s-save").onclick = function () {
+    save("user", $("s-user").value.trim()); save("repo", $("s-repo").value.trim()); save("token", $("s-token").value.trim());
+    $("settings").hidden = true; state.data = null; refresh();
+  };
+  $("s-cancel").onclick = function () { $("settings").hidden = true; };
+  $("gear").onclick = openSettings;
+  $("refresh").onclick = refresh;
+  $("chips").onclick = function (e) {
+    var t = e.target.getAttribute("data-tf"); if (!t) return;
+    state.tf = t; renderChips(); render();
+  };
+  $("search").oninput = function (e) { state.q = e.target.value; render(); };
+  $("list").onclick = function (e) {
+    var el = e.target.closest("[data-copy]"); if (!el) return;
+    var v = el.getAttribute("data-copy");
+    if (window.Android && window.Android.copy) window.Android.copy(v);
+  };
+
+  window.onAppResume = refresh;
+  setInterval(function () { if (!document.hidden) refresh(); }, 3 * 60 * 1000);
+
+  try { var cached = load("cache", ""); if (cached) state.data = JSON.parse(cached); } catch (e) {}
+  renderChips(); render(); refresh();
+})();
+</script>
+</body>
+</html>
