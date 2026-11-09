@@ -1,7 +1,7 @@
 name: forex-signals
 on:
   schedule:
-    - cron: "*/15 * * * 0-5"   # every 15 min, Sun-Fri (forex market hours, UTC)
+    - cron: "*/5 * * * 0-5"    # every 5 min, Sun-Fri (forex market hours, UTC)
   workflow_dispatch:            # lets you press "Run workflow" by hand
   push:                         # also runs right after you upload or change the bot files
     paths:
@@ -14,7 +14,7 @@ concurrency: signals
 jobs:
   scan:
     runs-on: ubuntu-latest
-    timeout-minutes: 14
+    timeout-minutes: 9
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
