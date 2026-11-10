@@ -1,6 +1,44 @@
 {
- "updated": "2026-11-10T01:35:27.223327+00:00",
+ "updated": "2026-11-10T08:49:07.261108+00:00",
  "signals": [
+  {
+   "id": "AUDNZD|15m|2026-11-10T08:30:00+00:00",
+   "pair": "AUDNZD",
+   "tf": "15m",
+   "side": "BUY",
+   "strategy": "bollinger",
+   "entry": 1.22678,
+   "sl": 1.225306,
+   "tp": 1.229728,
+   "rsi": 38.1,
+   "decimals": 5,
+   "bar_time": "2026-11-10T08:30:00+00:00",
+   "stats": {
+    "trades": 62,
+    "win_rate": 35.5,
+    "profit_factor": 1.12
+   },
+   "status": "open"
+  },
+  {
+   "id": "EURCHF|15m|2026-11-10T08:30:00+00:00",
+   "pair": "EURCHF",
+   "tf": "15m",
+   "side": "BUY",
+   "strategy": "ema_rsi",
+   "entry": 0.92,
+   "sl": 0.918805,
+   "tp": 0.922389,
+   "rsi": 58.5,
+   "decimals": 5,
+   "bar_time": "2026-11-10T08:30:00+00:00",
+   "stats": {
+    "trades": 32,
+    "win_rate": 37.5,
+    "profit_factor": 1.2
+   },
+   "status": "open"
+  },
   {
    "id": "NZDJPY|15m|2026-11-09T17:45:00+00:00",
    "pair": "NZDJPY",
@@ -60,7 +98,11 @@
     "profit_factor": 1.2
    },
    "id": "EURGBP|1h|2026-11-09T16:00:00+00:00",
-   "status": "open"
+   "status": "sl",
+   "exit": 0.835688,
+   "closed_at": "2026-11-10T07:00:00+00:00",
+   "pips": -8.5,
+   "result_r": -1.0
   },
   {
    "pair": "EURNZD",
@@ -79,7 +121,11 @@
     "profit_factor": 1.42
    },
    "id": "EURNZD|1h|2026-11-09T16:00:00+00:00",
-   "status": "open"
+   "status": "sl",
+   "exit": 1.990008,
+   "closed_at": "2026-11-10T01:00:00+00:00",
+   "pips": -44.0,
+   "result_r": -1.0
   }
  ]
 }
