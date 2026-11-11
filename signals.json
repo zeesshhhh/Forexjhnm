@@ -1,6 +1,120 @@
 {
- "updated": "2026-11-10T21:58:13.585126+00:00",
+ "updated": "2026-11-11T01:49:25.667479+00:00",
  "signals": [
+  {
+   "id": "NZDCHF|1d|2026-11-10T00:00:00+00:00",
+   "pair": "NZDCHF",
+   "tf": "1d",
+   "side": "BUY",
+   "strategy": "rsi_reversion",
+   "entry": 0.4616,
+   "sl": 0.454651,
+   "tp": 0.475498,
+   "rsi": 44.5,
+   "decimals": 5,
+   "bar_time": "2026-11-10T00:00:00+00:00",
+   "stats": {
+    "trades": 19,
+    "win_rate": 42.1,
+    "profit_factor": 1.45
+   },
+   "status": "open"
+  },
+  {
+   "id": "XAGUSD|4h|2026-11-10T20:00:00+00:00",
+   "pair": "XAGUSD",
+   "tf": "4h",
+   "side": "SELL",
+   "strategy": "ema_rsi",
+   "entry": 51.555,
+   "sl": 52.759343,
+   "tp": 49.146316,
+   "rsi": 45.0,
+   "decimals": 2,
+   "bar_time": "2026-11-10T20:00:00+00:00",
+   "stats": {
+    "trades": 28,
+    "win_rate": 39.3,
+    "profit_factor": 1.29
+   },
+   "status": "open"
+  },
+  {
+   "id": "XAUUSD|4h|2026-11-10T20:00:00+00:00",
+   "pair": "XAUUSD",
+   "tf": "4h",
+   "side": "SELL",
+   "strategy": "ema_rsi",
+   "entry": 4046.300049,
+   "sl": 4101.084778,
+   "tp": 3936.730591,
+   "rsi": 44.2,
+   "decimals": 2,
+   "bar_time": "2026-11-10T20:00:00+00:00",
+   "stats": {
+    "trades": 24,
+    "win_rate": 54.2,
+    "profit_factor": 2.36
+   },
+   "status": "open"
+  },
+  {
+   "id": "NZDJPY|15m|2026-11-11T01:30:00+00:00",
+   "pair": "NZDJPY",
+   "tf": "15m",
+   "side": "SELL",
+   "strategy": "bollinger",
+   "entry": 89.110001,
+   "sl": 89.224455,
+   "tp": 88.881091,
+   "rsi": 68.3,
+   "decimals": 3,
+   "bar_time": "2026-11-11T01:30:00+00:00",
+   "stats": {
+    "trades": 80,
+    "win_rate": 37.5,
+    "profit_factor": 1.2
+   },
+   "status": "open"
+  },
+  {
+   "id": "GBPJPY|15m|2026-11-11T01:30:00+00:00",
+   "pair": "GBPJPY",
+   "tf": "15m",
+   "side": "SELL",
+   "strategy": "bollinger",
+   "entry": 212.153,
+   "sl": 212.339369,
+   "tp": 211.780261,
+   "rsi": 68.7,
+   "decimals": 3,
+   "bar_time": "2026-11-11T01:30:00+00:00",
+   "stats": {
+    "trades": 85,
+    "win_rate": 37.6,
+    "profit_factor": 1.21
+   },
+   "status": "open"
+  },
+  {
+   "id": "USDJPY|15m|2026-11-11T01:30:00+00:00",
+   "pair": "USDJPY",
+   "tf": "15m",
+   "side": "SELL",
+   "strategy": "confluence",
+   "entry": 158.903,
+   "sl": 159.010112,
+   "tp": 158.688775,
+   "rsi": 68.2,
+   "decimals": 3,
+   "bar_time": "2026-11-11T01:30:00+00:00",
+   "stats": {
+    "trades": 48,
+    "win_rate": 45.8,
+    "profit_factor": 1.69
+   },
+   "status": "open"
+  },
   {
    "id": "GBPJPY|1h|2026-11-10T15:00:00+00:00",
    "pair": "GBPJPY",
@@ -41,7 +155,11 @@
     "win_rate": 37.5,
     "profit_factor": 1.2
    },
-   "status": "open"
+   "status": "sl",
+   "exit": 88.616945,
+   "closed_at": "2026-11-10T22:00:00+00:00",
+   "pips": -14.0,
+   "result_r": -1.0
   },
   {
    "id": "CHFJPY|15m|2026-11-10T16:15:00+00:00",
