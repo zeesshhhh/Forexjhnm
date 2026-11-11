@@ -1,6 +1,44 @@
 {
- "updated": "2026-11-11T08:29:14.369776+00:00",
+ "updated": "2026-11-11T16:32:44.005601+00:00",
  "signals": [
+  {
+   "id": "XAGUSD|1h|2026-11-11T15:00:00+00:00",
+   "pair": "XAGUSD",
+   "tf": "1h",
+   "side": "SELL",
+   "strategy": "macd",
+   "entry": 52.299999,
+   "sl": 52.797143,
+   "tp": 51.305711,
+   "rsi": 45.5,
+   "decimals": 2,
+   "bar_time": "2026-11-11T15:00:00+00:00",
+   "stats": {
+    "trades": 40,
+    "win_rate": 42.5,
+    "profit_factor": 1.48
+   },
+   "status": "open"
+  },
+  {
+   "id": "GBPJPY|1h|2026-11-11T15:00:00+00:00",
+   "pair": "GBPJPY",
+   "tf": "1h",
+   "side": "BUY",
+   "strategy": "ema_rsi",
+   "entry": 212.283005,
+   "sl": 211.905452,
+   "tp": 213.038109,
+   "rsi": 61.3,
+   "decimals": 3,
+   "bar_time": "2026-11-11T15:00:00+00:00",
+   "stats": {
+    "trades": 59,
+    "win_rate": 37.3,
+    "profit_factor": 1.19
+   },
+   "status": "open"
+  },
   {
    "id": "NZDCHF|1d|2026-11-10T00:00:00+00:00",
    "pair": "NZDCHF",
@@ -79,7 +117,11 @@
     "win_rate": 37.5,
     "profit_factor": 1.2
    },
-   "status": "open"
+   "status": "tp",
+   "exit": 88.881091,
+   "closed_at": "2026-11-11T08:30:00+00:00",
+   "pips": 22.9,
+   "result_r": 2.0
   },
   {
    "id": "GBPJPY|15m|2026-11-11T01:30:00+00:00",
@@ -121,7 +163,11 @@
     "win_rate": 45.8,
     "profit_factor": 1.69
    },
-   "status": "open"
+   "status": "sl",
+   "exit": 159.010112,
+   "closed_at": "2026-11-11T10:00:00+00:00",
+   "pips": -10.7,
+   "result_r": -1.0
   },
   {
    "id": "GBPJPY|1h|2026-11-10T15:00:00+00:00",
@@ -278,7 +324,11 @@
     "profit_factor": 1.71
    },
    "id": "CADCHF|15m|2026-11-09T17:30:00+00:00",
-   "status": "open"
+   "status": "sl",
+   "exit": 0.582642,
+   "closed_at": "2026-11-11T08:15:00+00:00",
+   "pips": -15.8,
+   "result_r": -1.0
   },
   {
    "pair": "EURGBP",
