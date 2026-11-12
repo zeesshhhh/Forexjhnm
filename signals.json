@@ -1,6 +1,82 @@
 {
- "updated": "2026-11-12T03:44:55.466499+00:00",
+ "updated": "2026-11-12T11:55:39.480168+00:00",
  "signals": [
+  {
+   "id": "USDJPY|4h|2026-11-12T04:00:00+00:00",
+   "pair": "USDJPY",
+   "tf": "4h",
+   "side": "SELL",
+   "strategy": "rsi_reversion",
+   "entry": 159.703003,
+   "sl": 160.256214,
+   "tp": 158.596581,
+   "rsi": 69.8,
+   "decimals": 3,
+   "bar_time": "2026-11-12T04:00:00+00:00",
+   "stats": {
+    "trades": 50,
+    "win_rate": 40.0,
+    "profit_factor": 1.33
+   },
+   "status": "open"
+  },
+  {
+   "id": "GBPUSD|4h|2026-11-12T04:00:00+00:00",
+   "pair": "GBPUSD",
+   "tf": "4h",
+   "side": "BUY",
+   "strategy": "rsi_reversion",
+   "entry": 1.32707,
+   "sl": 1.322946,
+   "tp": 1.335318,
+   "rsi": 30.1,
+   "decimals": 5,
+   "bar_time": "2026-11-12T04:00:00+00:00",
+   "stats": {
+    "trades": 50,
+    "win_rate": 44.0,
+    "profit_factor": 1.57
+   },
+   "status": "open"
+  },
+  {
+   "id": "EURGBP|1h|2026-11-12T10:00:00+00:00",
+   "pair": "EURGBP",
+   "tf": "1h",
+   "side": "BUY",
+   "strategy": "ema_rsi",
+   "entry": 0.83597,
+   "sl": 0.835171,
+   "tp": 0.837567,
+   "rsi": 55.2,
+   "decimals": 5,
+   "bar_time": "2026-11-12T10:00:00+00:00",
+   "stats": {
+    "trades": 71,
+    "win_rate": 38.0,
+    "profit_factor": 1.23
+   },
+   "status": "open"
+  },
+  {
+   "id": "EURNZD|5m|2026-11-12T11:50:00+00:00",
+   "pair": "EURNZD",
+   "tf": "5m",
+   "side": "BUY",
+   "strategy": "bollinger",
+   "entry": 1.99317,
+   "sl": 1.992051,
+   "tp": 1.995408,
+   "rsi": 34.3,
+   "decimals": 5,
+   "bar_time": "2026-11-12T11:50:00+00:00",
+   "stats": {
+    "trades": 134,
+    "win_rate": 41.0,
+    "profit_factor": 1.4
+   },
+   "status": "open"
+  },
   {
    "id": "GBPCAD|1d|2026-11-11T00:00:00+00:00",
    "pair": "GBPCAD",
@@ -75,7 +151,11 @@
     "win_rate": 37.5,
     "profit_factor": 1.2
    },
-   "status": "open"
+   "status": "sl",
+   "exit": 1.994817,
+   "closed_at": "2026-11-12T05:00:00+00:00",
+   "pips": -38.9,
+   "result_r": -1.0
   },
   {
    "id": "CADCHF|15m|2026-11-12T03:15:00+00:00",
@@ -94,7 +174,11 @@
     "win_rate": 44.4,
     "profit_factor": 1.6
    },
-   "status": "open"
+   "status": "sl",
+   "exit": 0.582832,
+   "closed_at": "2026-11-12T08:00:00+00:00",
+   "pips": -15.0,
+   "result_r": -1.0
   },
   {
    "id": "EURJPY|15m|2026-11-12T03:15:00+00:00",
