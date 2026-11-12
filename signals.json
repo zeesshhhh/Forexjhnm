@@ -1,6 +1,25 @@
 {
- "updated": "2026-11-12T11:55:39.480168+00:00",
+ "updated": "2026-11-12T19:36:50.870014+00:00",
  "signals": [
+  {
+   "id": "EURAUD|15m|2026-11-12T19:15:00+00:00",
+   "pair": "EURAUD",
+   "tf": "15m",
+   "side": "BUY",
+   "strategy": "ema_rsi",
+   "entry": 1.6247,
+   "sl": 1.622855,
+   "tp": 1.628389,
+   "rsi": 56.2,
+   "decimals": 5,
+   "bar_time": "2026-11-12T19:15:00+00:00",
+   "stats": {
+    "trades": 38,
+    "win_rate": 42.1,
+    "profit_factor": 1.45
+   },
+   "status": "open"
+  },
   {
    "id": "USDJPY|4h|2026-11-12T04:00:00+00:00",
    "pair": "USDJPY",
@@ -37,7 +56,11 @@
     "win_rate": 44.0,
     "profit_factor": 1.57
    },
-   "status": "open"
+   "status": "sl",
+   "exit": 1.322946,
+   "closed_at": "2026-11-12T12:00:00+00:00",
+   "pips": -41.2,
+   "result_r": -1.0
   },
   {
    "id": "EURGBP|1h|2026-11-12T10:00:00+00:00",
@@ -56,7 +79,11 @@
     "win_rate": 38.0,
     "profit_factor": 1.23
    },
-   "status": "open"
+   "status": "sl",
+   "exit": 0.835171,
+   "closed_at": "2026-11-12T16:00:00+00:00",
+   "pips": -8.0,
+   "result_r": -1.0
   },
   {
    "id": "EURNZD|5m|2026-11-12T11:50:00+00:00",
@@ -75,7 +102,11 @@
     "win_rate": 41.0,
     "profit_factor": 1.4
    },
-   "status": "open"
+   "status": "tp",
+   "exit": 1.995408,
+   "closed_at": "2026-11-12T14:50:00+00:00",
+   "pips": 22.4,
+   "result_r": 2.0
   },
   {
    "id": "GBPCAD|1d|2026-11-11T00:00:00+00:00",
@@ -132,7 +163,11 @@
     "win_rate": 37.3,
     "profit_factor": 1.19
    },
-   "status": "open"
+   "status": "tp",
+   "exit": 211.052933,
+   "closed_at": "2026-11-12T16:00:00+00:00",
+   "pips": 77.0,
+   "result_r": 2.0
   },
   {
    "id": "EURNZD|1h|2026-11-12T02:00:00+00:00",
@@ -197,7 +232,11 @@
     "win_rate": 40.4,
     "profit_factor": 1.38
    },
-   "status": "open"
+   "status": "sl",
+   "exit": 176.739975,
+   "closed_at": "2026-11-12T16:30:00+00:00",
+   "pips": -18.1,
+   "result_r": -1.0
   },
   {
    "id": "XAGUSD|1h|2026-11-11T15:00:00+00:00",
@@ -304,7 +343,11 @@
     "win_rate": 54.2,
     "profit_factor": 2.36
    },
-   "status": "open"
+   "status": "tp",
+   "exit": 3936.730591,
+   "closed_at": "2026-11-12T08:00:00+00:00",
+   "pips": 1095.7,
+   "result_r": 2.0
   },
   {
    "id": "NZDJPY|15m|2026-11-11T01:30:00+00:00",
