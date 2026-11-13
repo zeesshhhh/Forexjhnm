@@ -1,6 +1,44 @@
 {
- "updated": "2026-11-13T07:22:02.947150+00:00",
+ "updated": "2026-11-13T15:33:34.003725+00:00",
  "signals": [
+  {
+   "id": "USDCHF|1h|2026-11-13T14:00:00+00:00",
+   "pair": "USDCHF",
+   "tf": "1h",
+   "side": "SELL",
+   "strategy": "rsi_reversion",
+   "entry": 0.83652,
+   "sl": 0.838313,
+   "tp": 0.832934,
+   "rsi": 56.7,
+   "decimals": 5,
+   "bar_time": "2026-11-13T14:00:00+00:00",
+   "stats": {
+    "trades": 92,
+    "win_rate": 37.0,
+    "profit_factor": 1.17
+   },
+   "status": "open"
+  },
+  {
+   "id": "USDCHF|5m|2026-11-13T15:25:00+00:00",
+   "pair": "USDCHF",
+   "tf": "5m",
+   "side": "BUY",
+   "strategy": "macd",
+   "entry": 0.83762,
+   "sl": 0.836792,
+   "tp": 0.839276,
+   "rsi": 54.5,
+   "decimals": 5,
+   "bar_time": "2026-11-13T15:25:00+00:00",
+   "stats": {
+    "trades": 48,
+    "win_rate": 41.7,
+    "profit_factor": 1.43
+   },
+   "status": "open"
+  },
   {
    "id": "CADJPY|1h|2026-11-13T06:00:00+00:00",
    "pair": "CADJPY",
@@ -18,7 +56,11 @@
     "win_rate": 46.7,
     "profit_factor": 1.75
    },
-   "status": "open"
+   "status": "sl",
+   "exit": 112.289534,
+   "closed_at": "2026-11-13T14:00:00+00:00",
+   "pips": -21.8,
+   "result_r": -1.0
   },
   {
    "id": "GBPCHF|1d|2026-11-12T00:00:00+00:00",
