@@ -1,6 +1,25 @@
 {
- "updated": "2026-11-13T15:33:34.003725+00:00",
+ "updated": "2026-11-13T15:46:58.609842+00:00",
  "signals": [
+  {
+   "id": "EURGBP|5m|2026-11-13T15:40:00+00:00",
+   "pair": "EURGBP",
+   "tf": "5m",
+   "side": "BUY",
+   "strategy": "rsi_reversion",
+   "entry": 0.83426,
+   "sl": 0.833915,
+   "tp": 0.834951,
+   "rsi": 31.3,
+   "decimals": 5,
+   "bar_time": "2026-11-13T15:40:00+00:00",
+   "stats": {
+    "trades": 102,
+    "win_rate": 41.2,
+    "profit_factor": 1.4
+   },
+   "status": "open"
+  },
   {
    "id": "USDCHF|1h|2026-11-13T14:00:00+00:00",
    "pair": "USDCHF",
