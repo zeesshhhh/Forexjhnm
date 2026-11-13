@@ -126,6 +126,51 @@
   .nowline b.pos { color:var(--buy); } .nowline b.neg { color:var(--sell); }
   .openpl { grid-column:1 / -1; border-top:1px solid var(--line); padding-top:8px; margin-top:4px; font-size:13px; color:var(--mute); }
   .openpl b { display:inline; font-size:14px; }
+  .group { background:var(--card); border:1px solid var(--line); border-radius:14px; margin-bottom:10px; overflow:hidden; }
+  .ghead { width:100%; display:flex; align-items:center; gap:10px; padding:14px; background:transparent; border:0;
+           color:var(--text); font:inherit; text-align:left; cursor:pointer; }
+  .ghead .gname { font-weight:700; font-size:16px; }
+  .ghead .gcount { font-size:12px; font-weight:700; color:var(--mute); background:var(--bg); border:1px solid var(--line);
+                   border-radius:999px; padding:1px 8px; }
+  .ghead .gsum { margin-left:auto; font-size:12px; color:var(--mute); text-align:right; font-variant-numeric:tabular-nums; }
+  .ghead .gsum b { font-size:13px; }
+  .ghead .garrow { color:var(--mute); font-size:14px; transition:transform .2s; flex:none; }
+  .group.open .garrow { transform:rotate(90deg); }
+  .group.open .ghead { border-bottom:1px solid var(--line); }
+  .gbody { padding:10px 10px 0; }
+  .gbody .card { background:var(--bg); }
+  .gbar { width:4px; align-self:stretch; border-radius:4px; flex:none; }
+  .g-open .gbar { background:var(--open); } .g-closed .gbar { background:var(--accent); } .g-expired .gbar { background:var(--mute); }
+  @media (prefers-reduced-motion: reduce) { .ghead .garrow { transition:none; } }
+  .paper { margin:0 16px 10px; background:linear-gradient(180deg, rgba(59,130,246,.10), rgba(59,130,246,0) 70%), var(--card);
+           border:1px solid var(--line); border-radius:14px; padding:12px 14px; }
+  .ptop { display:flex; justify-content:space-between; gap:8px; font-size:12px; color:var(--mute); }
+  .ptop span:first-child { font-weight:700; color:var(--text); text-transform:uppercase; letter-spacing:.06em; }
+  .pequity { display:flex; align-items:baseline; gap:10px; margin:4px 0 10px; }
+  .pequity b { font-size:26px; font-variant-numeric:tabular-nums; }
+  .pequity span { font-size:14px; font-weight:700; }
+  .pequity small { font-size:11px; color:var(--mute); }
+  .pgrid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .pgrid div { background:var(--bg); border-radius:10px; padding:7px 8px; }
+  .pgrid span { display:block; font-size:11px; color:var(--mute); }
+  .pgrid b { font-size:14px; font-variant-numeric:tabular-nums; }
+  .pgrid .wide { grid-column:1 / -1; }
+  .pnote { font-size:11px; color:var(--mute); margin-top:6px; }
+  .pnote:empty { display:none; }
+  #perf { padding:18px 16px 28px; }
+  .fac { margin-top:16px; }
+  .fac h2 { font-size:14px; margin:0 0 6px; color:var(--text); }
+  .frow { display:grid; grid-template-columns:minmax(0,1.5fr) 40px 40px 52px minmax(0,1fr); gap:6px; align-items:center;
+          padding:7px 0; border-bottom:1px solid var(--line); font-size:13px; font-variant-numeric:tabular-nums; }
+  .frow.head { color:var(--mute); font-size:11px; padding-top:0; }
+  .frow.few { opacity:.45; }
+  .frow .v { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .frow .n, .frow .w { text-align:right; color:var(--mute); }
+  .frow .r { text-align:right; font-weight:700; } .frow .r.p { color:var(--buy); } .frow .r.m { color:var(--sell); }
+  .fbar { position:relative; height:18px; }
+  .fbar i { position:absolute; top:3px; height:12px; border-radius:3px; }
+  .fbar i.p { left:50%; background:rgba(34,197,94,.75); } .fbar i.m { right:50%; background:rgba(239,68,68,.75); }
+  .fbar::before { content:""; position:absolute; left:50%; top:0; bottom:0; width:1px; background:var(--line); }
   [hidden] { display:none !important; }
 </style>
 </head>
@@ -136,6 +181,7 @@
     <div class="sub" id="sub">Not connected</div>
   </div>
   <div class="hbtns">
+    <button class="icon" id="perfbtn" aria-label="What wins and loses">&#x1F4CA;</button>
     <button class="icon" id="logsbtn" aria-label="Download logs">&#x2B07;</button>
     <button class="icon" id="refresh" aria-label="Refresh">&#x27F3;</button>
     <button class="icon" id="gear" aria-label="Settings">&#x2699;</button>
@@ -145,6 +191,19 @@
   <div class="mrow"><span class="mdot"></span><span class="mtitle" id="m-title">Market</span></div>
   <div class="mwhen" id="m-when"></div>
   <div class="sessions" id="m-sessions"></div>
+</div>
+<div class="paper" id="paper" hidden>
+  <div class="ptop"><span>Paper account</span><span id="p-since"></span></div>
+  <div class="pequity"><b id="p-equity">$0.00</b><span id="p-ret"></span><small>equity, live</small></div>
+  <div class="pgrid">
+    <div><span>Balance (closed)</span><b id="p-bal"></b></div>
+    <div><span>Live P/L (open)</span><b id="p-float"></b></div>
+    <div><span>Net profit</span><b id="p-net"></b></div>
+    <div><span>Total profit</span><b id="p-prof"></b></div>
+    <div><span>Total loss</span><b id="p-loss"></b></div>
+    <div><span>Trades</span><b id="p-count" style="font-size:12px"></b></div>
+  </div>
+  <div class="pnote" id="p-note"></div>
 </div>
 <div class="chips" id="chips"></div>
 <div class="chips" id="schips"></div>
@@ -179,6 +238,8 @@
     <div class="prices" id="d-prices"></div>
     <div class="result" id="d-result"></div>
     <div class="kv" id="d-kv"></div>
+    <div class="section" id="d-fac-title">Signal facts</div>
+    <div class="kv" id="d-fac"></div>
     <div class="section" id="d-ind-title">Indicators at the signal</div>
     <div class="kv" id="d-ind"></div>
     <div class="dl">
@@ -188,6 +249,19 @@
     <div class="zipmsg" id="d-zipmsg"></div>
     <div class="note" id="d-note"></div>
   </div>
+</section>
+
+<section class="panel" id="perf" hidden>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="icon" id="perf-back" aria-label="Back">&#x2190;</button>
+    <h1>What wins, what loses</h1>
+  </div>
+  <div class="tabs" style="padding:12px 0 4px">
+    <button class="tab on" id="perf-live">Your trades</button>
+    <button class="tab" id="perf-hist">10-year test</button>
+  </div>
+  <div class="help" id="perf-note"></div>
+  <div id="perf-body"></div>
 </section>
 
 <section class="panel" id="logs" hidden>
@@ -223,7 +297,14 @@
     Pick only this repository, and give <b>Contents: Read-only</b>. Leave empty if the repository is public.</div>
   <label for="s-lot">Lot size for profit / loss in $</label>
   <input id="s-lot" inputmode="decimal" autocomplete="off" placeholder="0.01">
-  <div class="help">Used only to show each trade's value in US dollars. 0.01 = micro lot, 0.1 = mini lot, 1 = standard lot.</div>
+  <div class="help">Used for the $ value shown under each trade. 0.01 = micro lot, 0.1 = mini lot, 1 = standard lot.</div>
+  <label for="s-bal">Paper account starting balance ($)</label>
+  <input id="s-bal" inputmode="decimal" autocomplete="off" placeholder="1000">
+  <label for="s-risk">Paper account risk per trade (%)</label>
+  <input id="s-risk" inputmode="decimal" autocomplete="off" placeholder="1">
+  <div class="help">The paper account pretends you took every signal, risking the same amount on each one: this % of the starting balance. A trade that hits its stop loses exactly that amount, and one that hits its take profit wins twice that.</div>
+  <div class="row" style="margin-top:12px"><button class="btn ghost" id="s-reset">Start paper account fresh from now</button></div>
+  <div class="help" id="s-resetmsg"></div>
   <div class="row">
     <button class="btn" id="s-save">Save &amp; load</button>
     <button class="btn ghost" id="s-cancel">Cancel</button>
@@ -234,7 +315,7 @@
 (function () {
   var TFS = ["All", "5m", "15m", "1h", "4h", "1d"];
   var STATUSES = [["all", "Any result"], ["open", "Open"], ["won", "Won"], ["lost", "Lost"]];
-  var state = { tf: "All", st: "all", q: "", data: null, loading: false };
+  var state = { tf: "All", st: "all", q: "", data: null, loading: false, group: null };
   var $ = function (id) { return document.getElementById(id); };
   var NAMES = { XAUUSD: "gold", XAGUSD: "silver" };
 
@@ -401,6 +482,9 @@
     }
     var all = ((state.data && state.data.signals) || []).filter(function (x) { return matches(x, false); });
     updateOpenPL(all);
+    renderPaper();
+    var gs = $("gsum-open");
+    if (gs) gs.innerHTML = groupSummary("open", all.filter(function (x) { return matches(x, true) && (x.status || "open") === "open"; }));
   }
 
   function updateOpenPL(rows) {
@@ -424,6 +508,9 @@
       set[s.pair] = 1;
       var c = convPair(s.pair.slice(3)); if (c) set[c] = 1;
     });
+    paperPriceRows().forEach(function (s) {             // paper account: live price for its open trades
+      if ((s.status || "open") === "open") set[s.pair] = 1;
+    });
     wantedPairs = Object.keys(set);
     var missing = wantedPairs.some(function (p) { return !prices[p]; });
     if (missing || Date.now() - lastPriceFetch > 30000) fetchPrices();
@@ -444,6 +531,74 @@
       });
     });
     Promise.all(jobs).then(function () { priceBusy = false; updateLiveLines(); });
+  }
+
+  // =====================================================================
+  //  Paper account: pretends you took every signal with your lot size
+  // =====================================================================
+  function paperStartBalance() { var v = parseFloat(load("paper_bal", "1000")); return isFinite(v) && v > 0 ? v : 1000; }
+  function paperSince() { return load("paper_start", ""); }          // "" = all signals
+  function paperRiskPct() { var v = parseFloat(load("paper_risk", "1")); return isFinite(v) && v > 0 ? v : 1; }
+  function rNow(s, price) {                                          // live result in R (1R = the amount risked)
+    var risk = Math.abs(s.entry - s.sl) || 1e-9;
+    return (s.side === "BUY" ? 1 : -1) * (price - s.entry) / risk;
+  }
+  function rClosed(s) {
+    if (isFinite(s.result_r)) return s.result_r;
+    var risk = Math.abs(s.entry - s.sl) || 1e-9;
+    return (s.pips || 0) * pip(s.pair) / risk;
+  }
+  function paperTrades() {
+    var since = paperSince(), all = (state.data && state.data.signals) || [];
+    return since ? all.filter(function (s) { return s.bar_time >= since; }) : all.slice();
+  }
+  function usd2(v) {
+    var a = Math.abs(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return (v < 0 ? "−$" : "$") + a;
+  }
+  function signedUsd(v) { return (v > 0 ? "+" : "") + usd2(v); }
+
+  function renderPaper() {
+    var box = $("paper");
+    if (!state.data) { box.hidden = true; return; }
+    box.hidden = false;
+    var start = paperStartBalance(), trades = paperTrades();
+    var riskUsd = start * paperRiskPct() / 100;                      // the same dollar risk on every trade
+    var realized = 0, gains = 0, losses = 0, floating = 0, won = 0, lost = 0, open = 0, missing = 0;
+    trades.forEach(function (s) {
+      var st = s.status || "open";
+      if (st === "open") {
+        open++;
+        var q = prices[s.pair];
+        if (!q) { missing++; return; }
+        floating += rNow(s, q.price) * riskUsd;
+        return;
+      }
+      var v = rClosed(s) * riskUsd;
+      realized += v;
+      if (v >= 0) { gains += v; won++; } else { losses += v; lost++; }
+    });
+    var balance = start + realized, equity = balance + floating, net = equity - start;
+    var cls = function (v) { return v > 0 ? "pos" : v < 0 ? "neg" : ""; };
+    $("p-equity").textContent = usd2(equity);
+    var ret = $("p-ret");
+    ret.textContent = (net >= 0 ? "+" : "−") + Math.abs(100 * net / start).toFixed(2) + "%";
+    ret.className = cls(net);
+    var set = function (id, v, signed) { var e = $(id); e.textContent = signed ? signedUsd(v) : usd2(v); e.className = cls(v); };
+    set("p-bal", balance, false); $("p-bal").className = "";
+    set("p-float", floating, true);
+    set("p-net", net, true);
+    set("p-prof", gains, true);
+    set("p-loss", losses, true);
+    $("p-count").textContent = won + " won · " + lost + " lost · " + open + " open";
+    var since = paperSince();
+    $("p-since").textContent = (since ? "since " + when(since) : "all signals") + " · risk " + paperRiskPct() + "% (" + usd2(riskUsd) + ") per trade";
+    $("p-note").textContent = missing ? "Waiting for live prices for " + missing + " trade" + (missing > 1 ? "s" : "") + "…" : "";
+  }
+
+  // conversion rates needed to turn pips into dollars for every paper trade
+  function paperPriceRows() {
+    return paperTrades();
   }
 
   // ---------- list ----------
@@ -502,27 +657,72 @@
     $("sub").textContent = (d.updated ? "Updated " + ago(d.updated) + " · " : "") + c.user + "/" + c.repo;
     var all = d.signals || [];
     renderSummary(all);
+    renderPaper();
     var rows = all.filter(function (s) { return matches(s, true); });
     if (!rows.length) {
+      wantPrices([]);
       list.innerHTML = '<div class="empty"><b>No signals here yet</b>The bot only sends a signal when one of its strategies triggers. ' +
         "Quiet periods are normal.</div>";
       return;
     }
-    list.innerHTML = rows.map(function (s) {
-      var dp = dps(s), sell = s.side === "SELL", o = outcome(s);
-      var fresh = o === "open" && (Date.now() - new Date(s.bar_time).getTime()) < 2 * 3600 * 1000;
-      return '<div class="card' + (sell ? " sell" : "") + '" data-id="' + esc(sid(s)) + '">' +
-        '<div class="top"><span class="pair">' + esc(s.pair) + '</span><span class="side">' + esc(s.side) + "</span>" +
-        '<span class="tf">' + esc(s.tf) + "</span>" + (fresh ? '<span class="new">NEW</span>' : "") +
-        '<span class="ago">' + ago(s.bar_time) + "</span></div>" +
-        '<div class="prices">' +
-        '<div class="price"><span>Entry</span><b>' + fmt(s.entry, dp) + "</b></div>" +
-        '<div class="price sl"><span>Stop loss</span><b>' + fmt(s.sl, dp) + "</b></div>" +
-        '<div class="price tp"><span>Take profit</span><b>' + fmt(s.tp, dp) + "</b></div></div>" +
-        '<div class="meta"><span>' + esc(s.strategy) + " · tap for chart</span>" + statusBadge(s) + "</div>" +
-        '<div class="nowline" data-live="' + esc(sid(s)) + '">' + liveLine(s) + "</div></div>";
+    var groups = GROUPS.map(function (g) { return { key: g[0], name: g[1], items: rows.filter(g[2]) }; })
+                       .filter(function (g) { return g.items.length; });
+    list.innerHTML = groups.map(function (g) {
+      var open = state.group === g.key;
+      return '<div class="group g-' + g.key + (open ? " open" : "") + '">' +
+        '<button class="ghead" data-group="' + g.key + '" aria-expanded="' + open + '">' +
+        '<span class="gbar"></span><span class="gname">' + g.name + '</span><span class="gcount">' + g.items.length + "</span>" +
+        '<span class="gsum" id="gsum-' + g.key + '">' + groupSummary(g.key, g.items) + "</span>" +
+        '<span class="garrow">\u25B6</span></button>' +
+        (open ? '<div class="gbody">' + g.items.map(cardHtml).join("") + "</div>" : "") + "</div>";
     }).join("");
-    wantPrices(rows);
+    // live prices: always for open trades (group total), and for the cards you can see
+    var vis = rows.filter(function (x) { return outcome(x) === "open"; });
+    groups.forEach(function (g) { if (state.group === g.key && g.key !== "open") vis = vis.concat(g.items); });
+    wantPrices(vis);
+  }
+
+  // Trade groups: [key, title, which trades belong in it]
+  var GROUPS = [
+    ["open", "Open trades", function (s) { return (s.status || "open") === "open"; }],
+    ["closed", "Closed (TP / SL)", function (s) { return s.status === "tp" || s.status === "sl"; }],
+    ["expired", "Timed out", function (s) { return s.status === "expired"; }]
+  ];
+
+  function groupSummary(key, items) {
+    if (key === "open") {
+      var pips = 0, usd = 0, usdOk = true, priced = 0;
+      items.forEach(function (s) {
+        var q = prices[s.pair]; if (!q) return;
+        priced++;
+        var p = (s.side === "BUY" ? 1 : -1) * (q.price - s.entry) / pip(s.pair);
+        pips += p;
+        var d = dollars(s, p); if (d == null) usdOk = false; else usd += d;
+      });
+      if (!priced) return "live P/L loading";
+      return '<b class="' + (pips >= 0 ? "pos" : "neg") + '">' + sgn(pips, 1) + " pips" +
+        (usdOk ? " · " + money(usd) : "") + "</b><br>right now";
+    }
+    var won = items.filter(function (s) { return outcome(s) === "won"; }).length;
+    var r = items.reduce(function (a, s) { return a + (s.result_r || 0); }, 0);
+    var p2 = items.reduce(function (a, s) { return a + (s.pips || 0); }, 0);
+    return '<b class="' + (r >= 0 ? "pos" : "neg") + '">' + sgn(r, 1) + "R · " + sgn(p2, 0) + " pips</b><br>" +
+      won + " won · " + (items.length - won) + " lost";
+  }
+
+  function cardHtml(s) {
+    var dp = dps(s), sell = s.side === "SELL", o = outcome(s);
+    var fresh = o === "open" && (Date.now() - new Date(s.bar_time).getTime()) < 2 * 3600 * 1000;
+    return '<div class="card' + (sell ? " sell" : "") + '" data-id="' + esc(sid(s)) + '">' +
+      '<div class="top"><span class="pair">' + esc(s.pair) + '</span><span class="side">' + esc(s.side) + "</span>" +
+      '<span class="tf">' + esc(s.tf) + "</span>" + (fresh ? '<span class="new">NEW</span>' : "") +
+      '<span class="ago">' + ago(s.bar_time) + "</span></div>" +
+      '<div class="prices">' +
+      '<div class="price"><span>Entry</span><b>' + fmt(s.entry, dp) + "</b></div>" +
+      '<div class="price sl"><span>Stop loss</span><b>' + fmt(s.sl, dp) + "</b></div>" +
+      '<div class="price tp"><span>Take profit</span><b>' + fmt(s.tp, dp) + "</b></div></div>" +
+      '<div class="meta"><span>' + esc(s.strategy) + " · tap for chart</span>" + statusBadge(s) + "</div>" +
+      '<div class="nowline" data-live="' + esc(sid(s)) + '">' + liveLine(s) + "</div></div>";
   }
 
   // ---------- load signals ----------
@@ -558,15 +758,36 @@
   function openSettings() {
     var c = cfg();
     $("s-user").value = c.user; $("s-repo").value = c.repo; $("s-token").value = c.token; $("s-lot").value = lotSize();
+    $("s-bal").value = paperStartBalance(); $("s-risk").value = paperRiskPct();
+    resetArmed = false; $("s-reset").textContent = "Start paper account fresh from now";
+    $("s-resetmsg").textContent = paperSince() ? "Counting signals since " + when(paperSince()) + "." : "Counting all signals so far.";
     $("settings").hidden = false;
   }
   $("s-save").onclick = function () {
     save("user", $("s-user").value.trim()); save("repo", $("s-repo").value.trim()); save("token", $("s-token").value.trim());
     var lot = parseFloat(($("s-lot").value || "").replace(",", "."));
     save("lot", isFinite(lot) && lot > 0 ? String(lot) : "0.01");
+    var bal = parseFloat(($("s-bal").value || "").replace(/[,$\s]/g, ""));
+    save("paper_bal", isFinite(bal) && bal > 0 ? String(bal) : "1000");
+    var rk = parseFloat(($("s-risk").value || "").replace(",", ".").replace("%", ""));
+    save("paper_risk", isFinite(rk) && rk > 0 && rk <= 20 ? String(rk) : "1");
     $("settings").hidden = true; state.data = null; refresh();
   };
   $("s-cancel").onclick = function () { $("settings").hidden = true; };
+  var resetArmed = false;
+  $("s-reset").onclick = function () {
+    if (!resetArmed) {                                   // two taps, so it can't happen by accident
+      resetArmed = true;
+      $("s-reset").textContent = "Tap again to confirm";
+      $("s-resetmsg").textContent = "Only signals from now on will count. Past trades stay in the list.";
+      return;
+    }
+    resetArmed = false;
+    save("paper_start", new Date().toISOString());
+    $("s-reset").textContent = "Start paper account fresh from now";
+    $("s-resetmsg").textContent = "Done. Counting signals since " + when(paperSince()) + ".";
+    renderPaper();
+  };
 
   // =====================================================================
   //  Detail screen with charts
@@ -849,6 +1070,19 @@
     }
     $("d-ind").innerHTML = il.map(function (p) { return "<div><span>" + esc(p[0]) + "</span><b>" + esc(p[1]) + "</b></div>"; }).join("");
     $("d-ind").hidden = $("d-ind-title").hidden = !il.length;
+    var f = s.features, fl = [];
+    if (f) {
+      fl.push(["Candle pattern", f.pattern + " (" + f.pattern_vs_trade + ")"]);
+      fl.push(["Market direction", f.direction_vs_trade + " (chart " + f.trend + ", bigger " + f.bigger_trend + ")"]);
+      fl.push(["RSI zone", f.rsi_zone]);
+      fl.push(["Volatility", f.volatility]);
+      fl.push(["Signal candle day", f.weekday + (f.session && f.session !== "daily candle" ? " · " + f.session : "")]);
+      var nn = f.news_next_24h;
+      fl.push(["High-impact news next 24h", typeof nn === "number" ? (nn ? nn + ": " + f.news_titles : "none") : "not set up"]);
+      if (typeof f.news_prev_24h === "number") fl.push(["High-impact news previous 24h", String(f.news_prev_24h)]);
+    }
+    $("d-fac").innerHTML = fl.map(function (p) { return "<div><span>" + esc(p[0]) + "</span><b>" + esc(p[1]) + "</b></div>"; }).join("");
+    $("d-fac").hidden = $("d-fac-title").hidden = !fl.length;
     $("d-note").textContent = (s.pair === "XAUUSD" || s.pair === "XAGUSD")
       ? "Gold and silver levels come from futures prices, which can differ from your broker's spot price by a few dollars."
       : "Prices can differ slightly from your broker's.";
@@ -994,7 +1228,75 @@
     });
   }
 
+  // =====================================================================
+  //  What wins and what loses (logs/performance.json and the 10-year test)
+  // =====================================================================
+  var perfTab = "live", perfCache = {};
+  function repoApiUrl(path) {
+    var c = cfg();
+    return "https://api.github.com/repos/" + encodeURIComponent(c.user) + "/" + encodeURIComponent(c.repo) +
+           "/contents/" + path.split("/").map(encodeURIComponent).join("/");
+  }
+  function factorHtml(f, minTrades) {
+    var max = 0;
+    f.rows.forEach(function (r) { max = Math.max(max, Math.abs(r.avg_r)); });
+    max = max || 1;
+    return '<div class="fac"><h2>' + esc(f.name) + "</h2>" +
+      '<div class="frow head"><span>Value</span><span class="n">Trades</span><span class="w">Win</span><span class="r">Avg R</span><span></span></div>' +
+      f.rows.map(function (r) {
+        var w = Math.min(50, 50 * Math.abs(r.avg_r) / max), pos = r.avg_r >= 0;
+        return '<div class="frow' + (r.trades < minTrades ? " few" : "") + '"><span class="v">' + esc(r.value) + "</span>" +
+          '<span class="n">' + r.trades + '</span><span class="w">' + Math.round(r.win_rate) + "%</span>" +
+          '<span class="r ' + (pos ? "p" : "m") + '">' + sgn(r.avg_r, 2) + "</span>" +
+          '<span class="fbar"><i class="' + (pos ? "p" : "m") + '" style="width:' + w + '%"></i></span></div>';
+      }).join("") + "</div>";
+  }
+  function renderPerf() {
+    $("perf-live").classList.toggle("on", perfTab === "live");
+    $("perf-hist").classList.toggle("on", perfTab === "hist");
+    var body = $("perf-body"), note = $("perf-note"), data = perfCache[perfTab];
+    if (!data) { body.innerHTML = '<div class="empty">Loading&hellip;</div>'; note.textContent = ""; return; }
+    if (data.error) { body.innerHTML = '<div class="empty">' + esc(data.error) + "</div>"; note.textContent = ""; return; }
+    if (perfTab === "live") {
+      note.textContent = data.closed_trades + " closed trades, total " + sgn(data.total_r, 1) + "R. " +
+        "Avg R is the average result per trade (1R = the amount risked; a stop loss is \u22121R). Faded rows have fewer than 5 trades, " +
+        "so they say almost nothing yet. Candle, direction and news show \u201cnot recorded\u201d for trades from before this update.";
+      body.innerHTML = data.factors.map(function (f) { return factorHtml(f, 5); }).join("");
+    } else {
+      note.textContent = data.setup + " on " + data.timeframes.join(", ") + ": " + data.trades + " past trades, total " +
+        sgn(data.total_r, 1) + "R after spread. Faded rows have fewer than 30 trades and are mostly luck.";
+      body.innerHTML = data.factors.map(function (f) { return factorHtml(f, 30); }).join("");
+    }
+  }
+  function loadPerf() {
+    var c = cfg();
+    if (!c.user || !c.repo) { perfCache[perfTab] = { error: "Connect your bot in Settings first." }; renderPerf(); return; }
+    var tab = perfTab, path = tab === "live" ? "logs/performance.json" : "backtest_report.json";
+    renderPerf();
+    request("github", repoApiUrl(path), c.token).then(function (r) {
+      var res;
+      if (r.status === 200) {
+        try {
+          var j = JSON.parse(r.body);
+          res = tab === "live" ? j : j.factors;
+          if (!res) res = { error: "The strategy test hasn't made this breakdown yet. It appears after the next strategy-report run." };
+        } catch (e) { res = { error: "Couldn't read the file." }; }
+      } else if (r.status === 404) {
+        res = { error: tab === "live" ? "No performance log yet. It appears after the next bot scan." :
+                                        "No strategy report yet. Run strategy-report in GitHub Actions." };
+      } else {
+        res = { error: "Couldn't load (HTTP " + r.status + "). Try again in a minute." };
+      }
+      perfCache[tab] = res;
+      if (perfTab === tab) renderPerf();
+    });
+  }
+
   // ---------- events ----------
+  $("perfbtn").onclick = function () { $("perf").hidden = false; perfCache = {}; loadPerf(); };
+  $("perf-back").onclick = function () { $("perf").hidden = true; };
+  $("perf-live").onclick = function () { perfTab = "live"; if (perfCache.live) renderPerf(); else loadPerf(); };
+  $("perf-hist").onclick = function () { perfTab = "hist"; if (perfCache.hist) renderPerf(); else loadPerf(); };
   $("logsbtn").onclick = function () { $("logs").hidden = false; };
   $("logs-back").onclick = function () { $("logs").hidden = true; };
   $("logs-zip").onclick = downloadAllLogs;
@@ -1013,6 +1315,13 @@
   };
   $("search").oninput = function (e) { state.q = e.target.value; render(); };
   $("list").onclick = function (e) {
+    var head = e.target.closest(".ghead");
+    if (head) {
+      var k = head.getAttribute("data-group");
+      state.group = state.group === k ? null : k;      // open this one, fold the rest; tap again to fold
+      render();
+      return;
+    }
     var card = e.target.closest(".card"); if (card) openDetail(card.getAttribute("data-id"));
   };
   $("back").onclick = closeDetail;
@@ -1026,6 +1335,7 @@
   window.onBack = function () {
     if (!$("settings").hidden) { $("settings").hidden = true; return true; }
     if (!$("logs").hidden) { $("logs").hidden = true; return true; }
+    if (!$("perf").hidden) { $("perf").hidden = true; return true; }
     if (!$("detail").hidden) { closeDetail(); return true; }
     return false;
   };
@@ -1033,7 +1343,7 @@
   setInterval(function () {
     if (document.hidden) return;
     renderMarket();
-    if (!cur && $("logs").hidden && $("settings").hidden) fetchPrices();
+    if (!cur && $("logs").hidden && $("settings").hidden && $("perf").hidden) fetchPrices();
   }, 30000);
   setInterval(function () { if (!document.hidden && !cur) refresh(); }, 3 * 60 * 1000);
 
