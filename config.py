@@ -22,16 +22,21 @@ TIMEFRAMES = {
     "15m": ("15m", "30d", None),
     "1h":  ("60m", "180d", None),
     "4h":  ("60m", "360d", "4h"),
-    "1d":  ("1d", "5y", None),
+    "1d":  ("1d", "10y", None),
 }
+
+# Timeframes that can SEND new signals. The others above are only used to finish tracking
+# trades that are still open on them. The strategy report showed that only the daily chart
+# stayed profitable on unseen data after spread, so only 1d sends signals.
+SIGNAL_TIMEFRAMES = ["1d"]
 
 # A signal is only sent if its candle closed at most this long ago (GitHub can start runs late)
 MAX_SIGNAL_AGE = {"5m": "12min", "15m": "30min", "1h": "90min", "4h": "5h", "1d": "3D"}
 
 # ---------- Strategy ----------
-# "auto" = each pair/timeframe uses the strategy that backtested best on its own recent history.
+# "auto" = each pair/timeframe uses the strategy that backtested best on its own history (tested worse).
 # Or force one of: "ema_rsi", "macd", "rsi_reversion", "bollinger", "confluence"
-STRATEGY = os.getenv("STRATEGY", "auto")
+STRATEGY = os.getenv("STRATEGY", "bollinger")      # best result in the strategy report (with TREND_FILTER)
 MIN_TRADES_FOR_AUTO = 15     # a strategy needs at least this many backtest trades to be picked
 MIN_PROFIT_FACTOR = 1.1      # in auto mode, stay silent on pairs where nothing beat this
 
@@ -44,11 +49,14 @@ PICK_ON_UNSEEN = True
 UNSEEN_MIN_PROFIT_FACTOR = 1.0
 
 # Only trade in the direction of the bigger trend (EMA 800 is about EMA 200 one timeframe up)
-TREND_FILTER = False
+TREND_FILTER = True
 
 # Skip a new signal if an open trade already bets on the same currency in the same direction
 # (e.g. SELL USDJPY is open, so SELL GBPJPY is skipped: both are "buy yen").
 ONE_TRADE_PER_CURRENCY = True
+
+# Never have more than this many trades open at the same time (0 = no limit)
+MAX_OPEN_TRADES = 6
 
 # Risk: stop-loss and take-profit as multiples of ATR(14)
 SL_ATR = 1.5
