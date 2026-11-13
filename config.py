@@ -35,9 +35,29 @@ STRATEGY = os.getenv("STRATEGY", "auto")
 MIN_TRADES_FOR_AUTO = 15     # a strategy needs at least this many backtest trades to be picked
 MIN_PROFIT_FACTOR = 1.1      # in auto mode, stay silent on pairs where nothing beat this
 
+# Only these strategies can be picked in auto mode (remove names to switch them off)
+ALLOWED_STRATEGIES = ["ema_rsi", "macd", "rsi_reversion", "bollinger", "confluence"]
+
+# Pick the strategy on the older 70% of the chart, and only use it if it ALSO made money
+# on the newer 30% it never saw. Fewer signals, but the backtest numbers are honest.
+PICK_ON_UNSEEN = True
+UNSEEN_MIN_PROFIT_FACTOR = 1.0
+
+# Only trade in the direction of the bigger trend (EMA 800 is about EMA 200 one timeframe up)
+TREND_FILTER = False
+
+# Skip a new signal if an open trade already bets on the same currency in the same direction
+# (e.g. SELL USDJPY is open, so SELL GBPJPY is skipped: both are "buy yen").
+ONE_TRADE_PER_CURRENCY = True
+
 # Risk: stop-loss and take-profit as multiples of ATR(14)
 SL_ATR = 1.5
 TP_ATR = 3.0                 # 1:2 risk/reward
+
+# ---------- Logs (the app downloads these as a .zip) ----------
+LOG_DIR = "logs"
+SNAPSHOT_EVERY_MINUTES = 60  # how often market_snapshot.csv (every pair x timeframe) is rewritten
+KEEP_SCAN_LOG_DAYS = 30
 
 # ---------- Where signals go (Android) ----------
 # ntfy: install the free "ntfy" app from Play Store, subscribe to your topic name.
