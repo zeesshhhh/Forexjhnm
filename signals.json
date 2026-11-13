@@ -1,6 +1,45 @@
 {
- "updated": "2026-11-13T16:55:57.176223+00:00",
+ "updated": "2026-11-13T17:01:09.246419+00:00",
  "signals": [
+  {
+   "id": "EURJPY|1h|2026-11-13T16:00:00+00:00",
+   "pair": "EURJPY",
+   "tf": "1h",
+   "side": "BUY",
+   "strategy": "confluence",
+   "entry": 176.457993,
+   "sl": 176.138205,
+   "tp": 177.097569,
+   "rsi": 37.8,
+   "decimals": 3,
+   "bar_time": "2026-11-13T16:00:00+00:00",
+   "stats": {
+    "trades": 42,
+    "win_rate": 40.5,
+    "profit_factor": 1.36,
+    "test_trades": 24,
+    "test_win_rate": 33.3,
+    "test_profit_factor": 1.0
+   },
+   "indicators": {
+    "candle_time": "2026-11-13T16:00:00+00:00",
+    "close": 176.457993,
+    "rsi14": 37.77,
+    "ema9": 176.63052,
+    "ema21": 176.729809,
+    "ema200": 176.962889,
+    "trend": "down",
+    "macd": -0.094267,
+    "macd_signal": -0.0639547,
+    "macd_hist": -0.0303123,
+    "atr14": 0.213192,
+    "atr_pips": 21.3,
+    "bb_upper": 177.03562,
+    "bb_mid": 176.74025,
+    "bb_lower": 176.444879
+   },
+   "status": "open"
+  },
   {
    "id": "EURGBP|5m|2026-11-13T15:40:00+00:00",
    "pair": "EURGBP",
@@ -41,7 +80,11 @@
     "win_rate": 37.0,
     "profit_factor": 1.17
    },
-   "status": "open"
+   "status": "sl",
+   "exit": 0.838313,
+   "closed_at": "2026-11-13T16:00:00+00:00",
+   "pips": -17.9,
+   "result_r": -1.0
   },
   {
    "id": "USDCHF|5m|2026-11-13T15:25:00+00:00",
