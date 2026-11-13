@@ -110,6 +110,22 @@
   .files li { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:10px 12px; font-size:13px; color:var(--mute); }
   .files b { color:var(--text); font-family:ui-monospace, Menlo, monospace; font-size:12px; display:block; margin-bottom:2px; }
   .section { font-size:12px; color:var(--mute); text-transform:uppercase; letter-spacing:.06em; margin:16px 0 0; }
+  .market { margin:0 16px 10px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:10px 14px; }
+  .mrow { display:flex; align-items:center; gap:8px; }
+  .mdot { width:10px; height:10px; border-radius:50%; background:var(--sell); flex:none; }
+  .market.open .mdot { background:var(--buy); box-shadow:0 0 0 4px rgba(34,197,94,.18); }
+  .mtitle { font-weight:700; font-size:15px; }
+  .mwhen { color:var(--mute); font-size:12px; margin-top:3px; }
+  .sessions { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+  .sess { font-size:11px; padding:2px 8px; border-radius:999px; border:1px solid var(--line); color:var(--mute); }
+  .sess.on { color:var(--buy); border-color:rgba(34,197,94,.45); background:rgba(34,197,94,.08); }
+  .nowline { margin-top:8px; padding-top:8px; border-top:1px dashed var(--line); font-size:13px; color:var(--mute);
+             display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap; font-variant-numeric:tabular-nums; }
+  .nowline:empty { display:none; }
+  .nowline b { color:var(--text); }
+  .nowline b.pos { color:var(--buy); } .nowline b.neg { color:var(--sell); }
+  .openpl { grid-column:1 / -1; border-top:1px solid var(--line); padding-top:8px; margin-top:4px; font-size:13px; color:var(--mute); }
+  .openpl b { display:inline; font-size:14px; }
   [hidden] { display:none !important; }
 </style>
 </head>
@@ -125,6 +141,11 @@
     <button class="icon" id="gear" aria-label="Settings">&#x2699;</button>
   </div>
 </header>
+<div class="market" id="market">
+  <div class="mrow"><span class="mdot"></span><span class="mtitle" id="m-title">Market</span></div>
+  <div class="mwhen" id="m-when"></div>
+  <div class="sessions" id="m-sessions"></div>
+</div>
 <div class="chips" id="chips"></div>
 <div class="chips" id="schips"></div>
 <input class="search" id="search" placeholder="Search pair, e.g. EURUSD or gold" autocomplete="off">
@@ -200,6 +221,9 @@
   <input id="s-token" type="password" autocomplete="off" autocapitalize="none" placeholder="github_pat_...">
   <div class="help">GitHub &rarr; Settings &rarr; Developer settings &rarr; Fine-grained tokens &rarr; Generate.
     Pick only this repository, and give <b>Contents: Read-only</b>. Leave empty if the repository is public.</div>
+  <label for="s-lot">Lot size for profit / loss in $</label>
+  <input id="s-lot" inputmode="decimal" autocomplete="off" placeholder="0.01">
+  <div class="help">Used only to show each trade's value in US dollars. 0.01 = micro lot, 0.1 = mini lot, 1 = standard lot.</div>
   <div class="row">
     <button class="btn" id="s-save">Save &amp; load</button>
     <button class="btn ghost" id="s-cancel">Cancel</button>
@@ -279,6 +303,149 @@
   function byId(id) { var a = (state.data && state.data.signals) || []; for (var i = 0; i < a.length; i++) if (sid(a[i]) === id) return a[i]; return null; }
   function sid(s) { return s.id || (s.pair + "|" + s.tf + "|" + s.bar_time); }
 
+  // =====================================================================
+  //  Market hours: forex trades from Sunday 5 PM to Friday 5 PM New York time
+  // =====================================================================
+  var DAYS = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+  function zoneParts(tz, d) {
+    var f = new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "short", hour: "numeric", minute: "numeric",
+                                               month: "numeric", day: "numeric", hour12: false });
+    var o = {};
+    f.formatToParts(d || new Date()).forEach(function (p) { o[p.type] = p.value; });
+    return { dow: DAYS[o.weekday], h: (parseInt(o.hour, 10) || 0) % 24, m: parseInt(o.minute, 10) || 0,
+             month: parseInt(o.month, 10), day: parseInt(o.day, 10) };
+  }
+  function isOpenAt(d) {
+    var ny = zoneParts("America/New_York", d);
+    var wm = ny.dow * 1440 + ny.h * 60 + ny.m;            // minutes since Sunday 00:00 New York
+    var holiday = (ny.month === 12 && ny.day === 25) || (ny.month === 1 && ny.day === 1);
+    return { open: wm >= 1020 && wm < 5 * 1440 + 1020 && !holiday, holiday: holiday };   // Sun 5 PM .. Fri 5 PM New York
+  }
+  function marketState(now) {
+    now = now || new Date();
+    now = new Date(Math.floor(now.getTime() / 60000) * 60000);
+    var cur = isOpenAt(now), t = now.getTime(), step = 30 * 60000, limit = t + 9 * 86400000;
+    var probe = t + step;
+    while (probe < limit && isOpenAt(new Date(probe)).open === cur.open) probe += step;   // coarse search
+    var lo = probe - step;
+    while (lo < probe && isOpenAt(new Date(lo + 60000)).open === cur.open) lo += 60000;  // refine to the minute
+    var at = new Date(lo + 60000);
+    return { open: cur.open, holiday: cur.holiday, mins: Math.round((at.getTime() - t) / 60000), at: at };
+  }
+  var SESSIONS = [["Sydney", "Australia/Sydney", 7, 16], ["Tokyo", "Asia/Tokyo", 9, 18],
+                  ["London", "Europe/London", 8, 17], ["New York", "America/New_York", 8, 17]];
+  function dur(m) {
+    var d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), mm = m % 60;
+    return (d ? d + "d " : "") + (d || h ? h + "h" : "") + (d ? "" : (h ? " " : "") + mm + "m");
+  }
+  function renderMarket() {
+    var st = marketState(), box = $("market");
+    box.className = "market" + (st.open ? " open" : "");
+    $("m-title").textContent = st.open ? "Forex market open" : (st.holiday ? "Forex market closed (holiday)" : "Forex market closed");
+    var when = st.at.toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" });
+    $("m-when").textContent = (st.open ? "Closes " : "Opens ") + when + " your time · in " + dur(st.mins);
+    $("m-sessions").innerHTML = SESSIONS.map(function (x) {
+      var p = zoneParts(x[1]);
+      var on = st.open && p.dow >= 1 && p.dow <= 5 && p.h >= x[2] && p.h < x[3];
+      return '<span class="sess' + (on ? " on" : "") + '">' + (on ? "● " : "○ ") + x[0] + "</span>";
+    }).join("");
+    return st;
+  }
+
+  // =====================================================================
+  //  Live prices for the cards ("Now" line + profit / loss)
+  // =====================================================================
+  var prices = {}, priceBusy = false, lastPriceFetch = 0, wantedPairs = [];
+  function lotSize() { var v = parseFloat(load("lot", "0.01")); return isFinite(v) && v > 0 ? v : 0.01; }
+  function quoteToUSD(cur) {
+    if (cur === "USD") return 1;
+    if (prices[cur + "USD"]) return prices[cur + "USD"].price;
+    if (prices["USD" + cur]) return 1 / prices["USD" + cur].price;
+    return null;
+  }
+  function pipValueUSD(pair) {                       // value of 1 pip for 1.00 lot, in US dollars
+    if (pair === "XAUUSD") return 10;                // 100 oz x $0.10
+    if (pair === "XAGUSD") return 50;                // 5,000 oz x $0.01
+    var q = quoteToUSD(pair.slice(3));
+    return q == null ? null : 100000 * pip(pair) * q;
+  }
+  function dollars(s, pips) {
+    var v = pipValueUSD(s.pair);
+    return v == null ? null : pips * v * lotSize();
+  }
+  function money(v) { return (v < 0 ? "−$" : "+$") + Math.abs(v).toFixed(Math.abs(v) < 100 ? 2 : 0); }
+  function convPair(cur) {
+    return { EUR: "EURUSD", GBP: "GBPUSD", AUD: "AUDUSD", NZD: "NZDUSD", JPY: "USDJPY", CHF: "USDCHF", CAD: "USDCAD" }[cur];
+  }
+
+  function liveLine(s) {
+    var q = prices[s.pair];
+    if (!q) return "";
+    var dp = dps(s), o = outcome(s), dir = s.side === "BUY" ? 1 : -1;
+    var closedMkt = !marketState().open;
+    if (o === "open") {
+      var pips = dir * (q.price - s.entry) / pip(s.pair), usd = dollars(s, pips), c = pips >= 0 ? "pos" : "neg";
+      return "<span>Now <b>" + fmt(q.price, dp) + "</b>" + (closedMkt ? " (last price)" : "") + "</span>" +
+        '<span><b class="' + c + '">' + sgn(pips, 1) + " pips" + (usd == null ? "" : " · " + money(usd)) + "</b></span>";
+    }
+    var usd2 = dollars(s, s.pips || 0);
+    return "<span>Now <b>" + fmt(q.price, dp) + "</b></span><span>Result " + sgn(s.pips || 0, 1) + " pips" +
+      (usd2 == null ? "" : " · " + money(usd2)) + "</span>";
+  }
+
+  function updateLiveLines() {
+    var nodes = document.querySelectorAll("[data-live]");
+    for (var i = 0; i < nodes.length; i++) {
+      var s = byId(nodes[i].getAttribute("data-live"));
+      if (s) nodes[i].innerHTML = liveLine(s);
+    }
+    var all = ((state.data && state.data.signals) || []).filter(function (x) { return matches(x, false); });
+    updateOpenPL(all);
+  }
+
+  function updateOpenPL(rows) {
+    var el = $("openpl"); if (!el) return;
+    var open = rows.filter(function (s) { return outcome(s) === "open" && prices[s.pair]; });
+    if (!open.length) { el.innerHTML = ""; el.hidden = true; return; }
+    var pips = 0, usd = 0, usdOk = true;
+    open.forEach(function (s) {
+      var p = (s.side === "BUY" ? 1 : -1) * (prices[s.pair].price - s.entry) / pip(s.pair);
+      pips += p;
+      var d = dollars(s, p); if (d == null) usdOk = false; else usd += d;
+    });
+    el.hidden = false;
+    el.innerHTML = "Open trades right now: <b class=\"" + (pips >= 0 ? "pos" : "neg") + "\">" + sgn(pips, 1) + " pips</b>" +
+      (usdOk ? " · <b class=\"" + (usd >= 0 ? "pos" : "neg") + "\">" + money(usd) + "</b> at " + lotSize() + " lot" : "");
+  }
+
+  function wantPrices(rows) {
+    var set = {};
+    rows.slice(0, 60).forEach(function (s) {
+      set[s.pair] = 1;
+      var c = convPair(s.pair.slice(3)); if (c) set[c] = 1;
+    });
+    wantedPairs = Object.keys(set);
+    var missing = wantedPairs.some(function (p) { return !prices[p]; });
+    if (missing || Date.now() - lastPriceFetch > 30000) fetchPrices();
+  }
+
+  function fetchPrices() {
+    if (priceBusy || !wantedPairs.length || !(window.Android && window.Android.fetch)) return;
+    if (!marketState().open && wantedPairs.every(function (p) { return prices[p]; })) return;   // weekend: prices don't move
+    priceBusy = true; lastPriceFetch = Date.now();
+    var jobs = wantedPairs.map(function (pair) {
+      var url = "https://query1.finance.yahoo.com/v8/finance/chart/" + yahooSymbol(pair) + "?interval=1d&range=1d";
+      return request("web", url).then(function (r) {
+        if (r.status !== 200) return;
+        try {
+          var m = JSON.parse(r.body).chart.result[0].meta;
+          if (m && isFinite(m.regularMarketPrice)) prices[pair] = { price: m.regularMarketPrice, time: m.regularMarketTime };
+        } catch (e) {}
+      });
+    });
+    Promise.all(jobs).then(function () { priceBusy = false; updateLiveLines(); });
+  }
+
   // ---------- list ----------
   function renderChips() {
     $("chips").innerHTML = TFS.map(function (t) {
@@ -310,8 +477,10 @@
       "<div><b>" + (closed.length ? Math.round(100 * won / closed.length) + "%" : "–") + "</b><span>Win rate (" + won + "/" + closed.length + ")</span></div>" +
       '<div><b class="' + (r >= 0 ? "pos" : "neg") + '">' + (closed.length ? sgn(r, 1) + "R" : "–") + "</b><span>Total R</span></div>" +
       '<div><b class="' + (p >= 0 ? "pos" : "neg") + '">' + (closed.length ? sgn(p, 0) : "–") + "</b><span>Total pips</span></div>" +
-      "<div><b>" + open + "</b><span>Open now</span></div>";
+      "<div><b>" + open + "</b><span>Open now</span></div>" +
+      '<div class="openpl" id="openpl" hidden></div>';
     box.hidden = false;
+    updateOpenPL(rows);
   }
 
   function render() {
@@ -350,8 +519,10 @@
         '<div class="price"><span>Entry</span><b>' + fmt(s.entry, dp) + "</b></div>" +
         '<div class="price sl"><span>Stop loss</span><b>' + fmt(s.sl, dp) + "</b></div>" +
         '<div class="price tp"><span>Take profit</span><b>' + fmt(s.tp, dp) + "</b></div></div>" +
-        '<div class="meta"><span>' + esc(s.strategy) + " · tap for chart</span>" + statusBadge(s) + "</div></div>";
+        '<div class="meta"><span>' + esc(s.strategy) + " · tap for chart</span>" + statusBadge(s) + "</div>" +
+        '<div class="nowline" data-live="' + esc(sid(s)) + '">' + liveLine(s) + "</div></div>";
     }).join("");
+    wantPrices(rows);
   }
 
   // ---------- load signals ----------
@@ -386,11 +557,13 @@
   // ---------- settings ----------
   function openSettings() {
     var c = cfg();
-    $("s-user").value = c.user; $("s-repo").value = c.repo; $("s-token").value = c.token;
+    $("s-user").value = c.user; $("s-repo").value = c.repo; $("s-token").value = c.token; $("s-lot").value = lotSize();
     $("settings").hidden = false;
   }
   $("s-save").onclick = function () {
     save("user", $("s-user").value.trim()); save("repo", $("s-repo").value.trim()); save("token", $("s-token").value.trim());
+    var lot = parseFloat(($("s-lot").value || "").replace(",", "."));
+    save("lot", isFinite(lot) && lot > 0 ? String(lot) : "0.01");
     $("settings").hidden = true; state.data = null; refresh();
   };
   $("s-cancel").onclick = function () { $("settings").hidden = true; };
@@ -582,7 +755,8 @@
     $("now").textContent = fmt(now, dp);
     var np = $("nowpips");
     if (outcome(s) === "open") {
-      np.textContent = sgn(pips, 1) + " pips";
+      var usd = dollars(s, pips);
+      np.textContent = sgn(pips, 1) + " pips" + (usd == null ? "" : " · " + money(usd));
       np.className = pips >= 0 ? "pos" : "neg";
       // position between SL (0%) and TP (100%); entry sits at 1/3 because TP is 2x the SL distance
       var pct = (dir * (now - s.sl)) / (dir * (s.tp - s.sl)) * 100;
@@ -855,11 +1029,16 @@
     if (!$("detail").hidden) { closeDetail(); return true; }
     return false;
   };
-  window.onAppResume = function () { refresh(); if (cur && mode === "trade") refreshBars(); };
+  window.onAppResume = function () { renderMarket(); refresh(); fetchPrices(); if (cur && mode === "trade") refreshBars(); };
+  setInterval(function () {
+    if (document.hidden) return;
+    renderMarket();
+    if (!cur && $("logs").hidden && $("settings").hidden) fetchPrices();
+  }, 30000);
   setInterval(function () { if (!document.hidden && !cur) refresh(); }, 3 * 60 * 1000);
 
   try { var cached = load("cache", ""); if (cached) state.data = JSON.parse(cached); } catch (e) {}
-  renderChips(); render(); refresh();
+  renderMarket(); renderChips(); render(); refresh();
 })();
 </script>
 </body>
