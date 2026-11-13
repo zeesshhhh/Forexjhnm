@@ -1,27 +1,27 @@
 factor,value,trades,wins,win_rate,total_r,avg_r
-Timeframe,5m,2,2,100.0,4.0,2.0
+Timeframe,5m,3,3,100.0,6.0,2.0
 Timeframe,15m,12,3,25.0,-3.0,-0.25
 Timeframe,4h,4,1,25.0,-1.0,-0.25
 Timeframe,1h,10,2,20.0,-4.0,-0.4
+Strategy,macd,5,2,40.0,1.0,0.2
 Strategy,bollinger,9,3,33.3,0.0,0.0
 Strategy,rsi_reversion,3,1,33.3,0.0,0.0
 Strategy,ema_rsi,10,3,30.0,-1.0,-0.1
-Strategy,macd,4,1,25.0,-1.0,-0.25
 Strategy,confluence,2,0,0.0,-2.0,-1.0
 Buy or sell,SELL,14,5,35.7,1.0,0.071
-Buy or sell,BUY,14,3,21.4,-5.0,-0.357
+Buy or sell,BUY,15,4,26.7,-3.0,-0.2
 Pair type,gold / silver,3,2,66.7,3.0,1.0
 Pair type,cross,22,6,27.3,-4.0,-0.182
-Pair type,major,3,0,0.0,-3.0,-1.0
+Pair type,major,4,1,25.0,-1.0,-0.25
 Pair,XAUUSD,1,1,100.0,2.0,2.0
 Pair,EURCHF,1,1,100.0,2.0,2.0
 Pair,GBPJPY,4,2,50.0,2.0,0.5
+Pair,USDCHF,2,1,50.0,1.0,0.5
 Pair,XAGUSD,2,1,50.0,1.0,0.5
 Pair,EURGBP,3,1,33.3,0.0,0.0
 Pair,EURNZD,3,1,33.3,0.0,0.0
 Pair,NZDJPY,3,1,33.3,0.0,0.0
 Pair,CADCHF,2,0,0.0,-2.0,-1.0
-Pair,USDCHF,1,0,0.0,-1.0,-1.0
 Pair,CADJPY,1,0,0.0,-1.0,-1.0
 Pair,EURCAD,1,0,0.0,-1.0,-1.0
 Pair,EURAUD,1,0,0.0,-1.0,-1.0
@@ -30,11 +30,11 @@ Pair,EURJPY,1,0,0.0,-1.0,-1.0
 Pair,USDJPY,1,0,0.0,-1.0,-1.0
 Pair,CHFJPY,1,0,0.0,-1.0,-1.0
 Pair,AUDNZD,1,0,0.0,-1.0,-1.0
-Candle pattern,not recorded,28,8,28.6,-4.0,-0.143
-Candle vs trade,not recorded,28,8,28.6,-4.0,-0.143
-Market direction,not recorded,28,8,28.6,-4.0,-0.143
-RSI zone,not recorded,28,8,28.6,-4.0,-0.143
-Volatility,not recorded,28,8,28.6,-4.0,-0.143
-Weekday,not recorded,28,8,28.6,-4.0,-0.143
-Session,not recorded,28,8,28.6,-4.0,-0.143
-High-impact news in next 24h,not recorded,28,8,28.6,-4.0,-0.143
+Candle pattern,not recorded,29,9,31.0,-2.0,-0.069
+Candle vs trade,not recorded,29,9,31.0,-2.0,-0.069
+Market direction,not recorded,29,9,31.0,-2.0,-0.069
+RSI zone,not recorded,29,9,31.0,-2.0,-0.069
+Volatility,not recorded,29,9,31.0,-2.0,-0.069
+Weekday,not recorded,29,9,31.0,-2.0,-0.069
+Session,not recorded,29,9,31.0,-2.0,-0.069
+High-impact news in next 24h,not recorded,29,9,31.0,-2.0,-0.069
