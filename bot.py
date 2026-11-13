@@ -14,6 +14,7 @@ import pandas as pd
 import requests
 
 import config
+import features
 import logbook
 from backtest import backtest
 from data import INTERVAL_LEN, get_candles
@@ -123,7 +124,10 @@ def _ranked(df, names):
 def pick_strategy(df):
     """Returns (strategy name, stats, reason). name is None when nothing is good enough."""
     if config.STRATEGY != "auto":
-        return config.STRATEGY, None, "fixed strategy"
+        st = backtest(df, signal_fn(config.STRATEGY))           # this pair's own history, shown in the app
+        stats = {"trades": st["trades"], "win_rate": round(st["win_rate"], 1),
+                 "profit_factor": round(min(st["profit_factor"], 99.0), 2)}
+        return config.STRATEGY, stats, "fixed strategy"
     names = [n for n in getattr(config, "ALLOWED_STRATEGIES", list(STRATEGIES)) if n in STRATEGIES]
     if not names:
         return None, None, "no strategies allowed in config"
@@ -144,6 +148,9 @@ def pick_strategy(df):
     if not ranked or ranked[0]["profit_factor"] < config.MIN_PROFIT_FACTOR:
         return None, None, "no strategy good enough"
     return ranked[0]["strategy"], ranked[0], "ok"
+
+
+NEWS_EVENTS = None          # high-impact news, loaded once per scan (None = not set up)
 
 
 def analyze(pair, tf, df, scan_time):
@@ -180,13 +187,18 @@ def analyze(pair, tf, df, scan_time):
     price, a = df["Close"].iloc[-1], atr(df).iloc[-1]
     snap["signal"] = "BUY" if side > 0 else "SELL"
     snap["note"] = "signal"
+    try:
+        facts = features.describe(df, pair, tf, snap["signal"], NEWS_EVENTS, closed_at)
+    except Exception as e:
+        print(f"[features error] {pair} {tf}: {e}")
+        facts = {}
     return {
         "pair": pair, "tf": tf, "side": "BUY" if side > 0 else "SELL", "strategy": name,
         "entry": price,
         "sl": price - side * config.SL_ATR * a,
         "tp": price + side * config.TP_ATR * a,
         "rsi": rsi(df["Close"]).iloc[-1],
-        "bar_time": bar_time.isoformat(), "stats": stats, "indicators": ind,
+        "bar_time": bar_time.isoformat(), "stats": stats, "indicators": ind, "features": facts,
     }, snap
 
 
@@ -199,7 +211,7 @@ def format_signal(s):
         f"Stop loss: {s['sl']:.{d}f}",
         f"Take profit: {s['tp']:.{d}f}",
         f"R:R 1:{config.TP_ATR / config.SL_ATR:.1f} | RSI {s['rsi']:.0f}",
-        f"Strategy: {s['strategy']}",
+        f"Strategy: {s['strategy']}" + (" + trend filter" if getattr(config, "TREND_FILTER", False) else ""),
     ]
     if s["stats"]:
         st = s["stats"]
@@ -207,6 +219,12 @@ def format_signal(s):
         if st.get("test_trades") is not None:
             lines.append(f"On unseen data: {st['test_trades']} trades, {st['test_win_rate']:.0f}% win, "
                          f"PF {st['test_profit_factor']:.2f}")
+    f = s.get("features") or {}
+    if f:
+        lines.append(f"Candle: {f.get('pattern')} ({f.get('pattern_vs_trade')}) | Direction: {f.get('direction_vs_trade')}")
+        n = f.get("news_next_24h")
+        if isinstance(n, int):
+            lines.append(f"High-impact news next 24h: {n}" + (f" ({f.get('news_titles')})" if n else ""))
     lines.append(f"Candle closed: {pd.Timestamp(s['bar_time']).strftime('%d %b %H:%M UTC')}")
     lines.append("Not financial advice. Check the chart before trading.")
     return title, "\n".join(lines)
@@ -246,6 +264,7 @@ def to_row(s):
             **({k: st[k] for k in ("test_trades", "test_win_rate", "test_profit_factor") if k in st}),
         },
         "indicators": s.get("indicators"),
+        "features": s.get("features"),
         "status": "open",
     }
 
@@ -324,11 +343,22 @@ def scan(dry=False):
         for r in rows:
             r.setdefault("id", f"{r['pair']}|{r['tf']}|{r['bar_time']}")
             r.setdefault("status", "open")
-        found = skipped = closed_n = no_data = checked = 0
+        global NEWS_EVENTS
+        try:
+            NEWS_EVENTS = features.refresh_news()
+        except Exception as e:
+            print(f"[news error] {e}")
+            NEWS_EVENTS = None
+        found = skipped = skipped_max = closed_n = no_data = checked = 0
         changed = False
         snaps = []
+        signal_tfs = getattr(config, "SIGNAL_TIMEFRAMES", list(config.TIMEFRAMES))
         for tf in config.TIMEFRAMES:
             for pair in config.SYMBOLS:
+                makes_signals = tf in signal_tfs
+                has_open = any(r["pair"] == pair and r["tf"] == tf and r.get("status", "open") == "open" for r in rows)
+                if not makes_signals and not has_open:
+                    continue                                 # nothing to do on this chart
                 checked += 1
                 df = get_candles(pair, tf)
                 if df is None:
@@ -340,6 +370,8 @@ def scan(dry=False):
                     print(f"\n{title}\n{body}")
                     if not dry:
                         notify(title, body, priority="default", tags="white_check_mark" if row["status"] == "tp" else "x")
+                if not makes_signals:
+                    continue                                 # only tracking an open trade here
                 try:
                     sig, snap = analyze(pair, tf, df, scan_time)
                 except Exception as e:                       # one bad chart must not stop the scan
@@ -359,6 +391,13 @@ def scan(dry=False):
                     print(f"[skip] {sig['side']} {pair} ({tf}): same currency bet as open {clash}")
                     skipped += 1
                     continue
+                max_open = getattr(config, "MAX_OPEN_TRADES", 0)
+                n_open = sum(1 for r in rows if r.get("status", "open") == "open" and r["tf"] in signal_tfs)
+                if max_open and n_open >= max_open:
+                    snap["note"] = f"skipped: {n_open} trades already open (limit {max_open})"
+                    print(f"[skip] {sig['side']} {pair} ({tf}): {n_open} trades already open (limit {max_open})")
+                    skipped_max += 1
+                    continue
                 title, body = format_signal(sig)
                 print(f"\n{title}\n{body}")
                 if not dry:
@@ -372,17 +411,19 @@ def scan(dry=False):
                 save_history(rows)
         secs = (pd.Timestamp.now(tz="UTC") - t0).total_seconds()
         print(f"\n[{pd.Timestamp.now(tz='UTC'):%Y-%m-%d %H:%M} UTC] scan done in {secs:.0f}s: {found} new signal(s), "
-              f"{skipped} skipped (same currency), {closed_n} closed, {no_data} chart(s) without data.")
+              f"{skipped} skipped (same currency), {skipped_max} skipped (open-trade limit), {closed_n} closed, "
+              f"{no_data} chart(s) without data.")
     if not dry:
         printed = cap.text()
         errors = [ln for ln in printed.splitlines() if ln.startswith("[") and "error" in ln.lower()
                   or ln.startswith("[data]") or ln.startswith("[ntfy]") or ln.startswith("[telegram]")]
         summary = {"scan_time_utc": scan_time, "seconds": round(secs), "checked": checked, "no_data": no_data,
-                   "new_signals": found, "skipped_same_currency": skipped, "trades_closed": closed_n,
+                   "new_signals": found, "skipped_same_currency": skipped, "skipped_max_open": skipped_max,
+                   "trades_closed": closed_n,
                    "open_trades": sum(1 for r in rows if r.get("status", "open") == "open"),
                    "errors": " | ".join(errors[:3])[:300]}
         try:
-            logbook.write_all(rows, pip_size, snaps, summary, printed, force=bool(changed or skipped or errors))
+            logbook.write_all(rows, pip_size, snaps, summary, printed, force=bool(changed or skipped or skipped_max or errors))
         except Exception as e:
             print(f"[log error] {e}")
     return found
