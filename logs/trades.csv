@@ -1,5 +1,5 @@
 id,pair,tf,side,strategy,signal_candle_utc,entry,sl,tp,stop_pips,target_pips,status,closed_at_utc,exit,pips,result_r,backtest_trades,backtest_win_rate,backtest_pf,unseen_trades,unseen_win_rate,unseen_pf,ind_candle_time,ind_close,ind_rsi14,ind_ema9,ind_ema21,ind_ema200,ind_trend,ind_macd,ind_macd_signal,ind_macd_hist,ind_atr14,ind_atr_pips,ind_bb_upper,ind_bb_mid,ind_bb_lower
-EURGBP|5m|2026-11-13T15:40:00+00:00,EURGBP,5m,BUY,rsi_reversion,2026-11-13T15:40:00+00:00,0.83426,0.833915,0.834951,3.5,6.9,open,,,,,102,41.2,1.4,,,,,,,,,,,,,,,,,,
+EURGBP|5m|2026-11-13T15:40:00+00:00,EURGBP,5m,BUY,rsi_reversion,2026-11-13T15:40:00+00:00,0.83426,0.833915,0.834951,3.5,6.9,tp,2026-11-13T16:50:00+00:00,0.834951,6.9,2.0,102,41.2,1.4,,,,,,,,,,,,,,,,,,
 USDCHF|1h|2026-11-13T14:00:00+00:00,USDCHF,1h,SELL,rsi_reversion,2026-11-13T14:00:00+00:00,0.83652,0.838313,0.832934,17.9,35.9,open,,,,,92,37.0,1.17,,,,,,,,,,,,,,,,,,
 USDCHF|5m|2026-11-13T15:25:00+00:00,USDCHF,5m,BUY,macd,2026-11-13T15:25:00+00:00,0.83762,0.836792,0.839276,8.3,16.6,open,,,,,48,41.7,1.43,,,,,,,,,,,,,,,,,,
 CADJPY|1h|2026-11-13T06:00:00+00:00,CADJPY,1h,SELL,macd,2026-11-13T06:00:00+00:00,112.071999,112.289534,111.636927,21.8,43.5,sl,2026-11-13T14:00:00+00:00,112.289534,-21.8,-1.0,60,46.7,1.75,,,,,,,,,,,,,,,,,,
