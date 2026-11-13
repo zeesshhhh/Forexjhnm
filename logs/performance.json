@@ -1,0 +1,384 @@
+{
+ "closed_trades": 28,
+ "last_closed_utc": "2026-11-13T16:50:00+00:00",
+ "total_r": -4.0,
+ "factors": [
+  {
+   "name": "Timeframe",
+   "rows": [
+    {
+     "value": "5m",
+     "trades": 2,
+     "wins": 2,
+     "win_rate": 100.0,
+     "total_r": 4.0,
+     "avg_r": 2.0
+    },
+    {
+     "value": "15m",
+     "trades": 12,
+     "wins": 3,
+     "win_rate": 25.0,
+     "total_r": -3.0,
+     "avg_r": -0.25
+    },
+    {
+     "value": "4h",
+     "trades": 4,
+     "wins": 1,
+     "win_rate": 25.0,
+     "total_r": -1.0,
+     "avg_r": -0.25
+    },
+    {
+     "value": "1h",
+     "trades": 10,
+     "wins": 2,
+     "win_rate": 20.0,
+     "total_r": -4.0,
+     "avg_r": -0.4
+    }
+   ]
+  },
+  {
+   "name": "Strategy",
+   "rows": [
+    {
+     "value": "bollinger",
+     "trades": 9,
+     "wins": 3,
+     "win_rate": 33.3,
+     "total_r": 0.0,
+     "avg_r": 0.0
+    },
+    {
+     "value": "rsi_reversion",
+     "trades": 3,
+     "wins": 1,
+     "win_rate": 33.3,
+     "total_r": 0.0,
+     "avg_r": 0.0
+    },
+    {
+     "value": "ema_rsi",
+     "trades": 10,
+     "wins": 3,
+     "win_rate": 30.0,
+     "total_r": -1.0,
+     "avg_r": -0.1
+    },
+    {
+     "value": "macd",
+     "trades": 4,
+     "wins": 1,
+     "win_rate": 25.0,
+     "total_r": -1.0,
+     "avg_r": -0.25
+    },
+    {
+     "value": "confluence",
+     "trades": 2,
+     "wins": 0,
+     "win_rate": 0.0,
+     "total_r": -2.0,
+     "avg_r": -1.0
+    }
+   ]
+  },
+  {
+   "name": "Buy or sell",
+   "rows": [
+    {
+     "value": "SELL",
+     "trades": 14,
+     "wins": 5,
+     "win_rate": 35.7,
+     "total_r": 1.0,
+     "avg_r": 0.071
+    },
+    {
+     "value": "BUY",
+     "trades": 14,
+     "wins": 3,
+     "win_rate": 21.4,
+     "total_r": -5.0,
+     "avg_r": -0.357
+    }
+   ]
+  },
+  {
+   "name": "Pair type",
+   "rows": [
+    {
+     "value": "gold / silver",
+     "trades": 3,
+     "wins": 2,
+     "win_rate": 66.7,
+     "total_r": 3.0,
+     "avg_r": 1.0
+    },
+    {
+     "value": "cross",
+     "trades": 22,
+     "wins": 6,
+     "win_rate": 27.3,
+     "total_r": -4.0,
+     "avg_r": -0.182
+    },
+    {
+     "value": "major",
+     "trades": 3,
+     "wins": 0,
+     "win_rate": 0.0,
+     "total_r": -3.0,
+     "avg_r": -1.0
+    }
+   ]
+  },
+  {
+   "name": "Pair",
+   "rows": [
+    {
+     "value": "XAUUSD",
+     "trades": 1,
+     "wins": 1,
+     "win_rate": 100.0,
+     "total_r": 2.0,
+     "avg_r": 2.0
+    },
+    {
+     "value": "EURCHF",
+     "trades": 1,
+     "wins": 1,
+     "win_rate": 100.0,
+     "total_r": 2.0,
+     "avg_r": 2.0
+    },
+    {
+     "value": "GBPJPY",
+     "trades": 4,
+     "wins": 2,
+     "win_rate": 50.0,
+     "total_r": 2.0,
+     "avg_r": 0.5
+    },
+    {
+     "value": "XAGUSD",
+     "trades": 2,
+     "wins": 1,
+     "win_rate": 50.0,
+     "total_r": 1.0,
+     "avg_r": 0.5
+    },
+    {
+     "value": "EURGBP",
+     "trades": 3,
+     "wins": 1,
+     "win_rate": 33.3,
+     "total_r": 0.0,
+     "avg_r": 0.0
+    },
+    {
+     "value": "EURNZD",
+     "trades": 3,
+     "wins": 1,
+     "win_rate": 33.3,
+     "total_r": 0.0,
+     "avg_r": 0.0
+    },
+    {
+     "value": "NZDJPY",
+     "trades": 3,
+     "wins": 1,
+     "win_rate": 33.3,
+     "total_r": 0.0,
+     "avg_r": 0.0
+    },
+    {
+     "value": "CADCHF",
+     "trades": 2,
+     "wins": 0,
+     "win_rate": 0.0,
+     "total_r": -2.0,
+     "avg_r": -1.0
+    },
+    {
+     "value": "USDCHF",
+     "trades": 1,
+     "wins": 0,
+     "win_rate": 0.0,
+     "total_r": -1.0,
+     "avg_r": -1.0
+    },
+    {
+     "value": "CADJPY",
+     "trades": 1,
+     "wins": 0,
+     "win_rate": 0.0,
+     "total_r": -1.0,
+     "avg_r": -1.0
+    },
+    {
+     "value": "EURCAD",
+     "trades": 1,
+     "wins": 0,
+     "win_rate": 0.0,
+     "total_r": -1.0,
+     "avg_r": -1.0
+    },
+    {
+     "value": "EURAUD",
+     "trades": 1,
+     "wins": 0,
+     "win_rate": 0.0,
+     "total_r": -1.0,
+     "avg_r": -1.0
+    },
+    {
+     "value": "GBPUSD",
+     "trades": 1,
+     "wins": 0,
+     "win_rate": 0.0,
+     "total_r": -1.0,
+     "avg_r": -1.0
+    },
+    {
+     "value": "EURJPY",
+     "trades": 1,
+     "wins": 0,
+     "win_rate": 0.0,
+     "total_r": -1.0,
+     "avg_r": -1.0
+    },
+    {
+     "value": "USDJPY",
+     "trades": 1,
+     "wins": 0,
+     "win_rate": 0.0,
+     "total_r": -1.0,
+     "avg_r": -1.0
+    },
+    {
+     "value": "CHFJPY",
+     "trades": 1,
+     "wins": 0,
+     "win_rate": 0.0,
+     "total_r": -1.0,
+     "avg_r": -1.0
+    },
+    {
+     "value": "AUDNZD",
+     "trades": 1,
+     "wins": 0,
+     "win_rate": 0.0,
+     "total_r": -1.0,
+     "avg_r": -1.0
+    }
+   ]
+  },
+  {
+   "name": "Candle pattern",
+   "rows": [
+    {
+     "value": "not recorded",
+     "trades": 28,
+     "wins": 8,
+     "win_rate": 28.6,
+     "total_r": -4.0,
+     "avg_r": -0.143
+    }
+   ]
+  },
+  {
+   "name": "Candle vs trade",
+   "rows": [
+    {
+     "value": "not recorded",
+     "trades": 28,
+     "wins": 8,
+     "win_rate": 28.6,
+     "total_r": -4.0,
+     "avg_r": -0.143
+    }
+   ]
+  },
+  {
+   "name": "Market direction",
+   "rows": [
+    {
+     "value": "not recorded",
+     "trades": 28,
+     "wins": 8,
+     "win_rate": 28.6,
+     "total_r": -4.0,
+     "avg_r": -0.143
+    }
+   ]
+  },
+  {
+   "name": "RSI zone",
+   "rows": [
+    {
+     "value": "not recorded",
+     "trades": 28,
+     "wins": 8,
+     "win_rate": 28.6,
+     "total_r": -4.0,
+     "avg_r": -0.143
+    }
+   ]
+  },
+  {
+   "name": "Volatility",
+   "rows": [
+    {
+     "value": "not recorded",
+     "trades": 28,
+     "wins": 8,
+     "win_rate": 28.6,
+     "total_r": -4.0,
+     "avg_r": -0.143
+    }
+   ]
+  },
+  {
+   "name": "Weekday",
+   "rows": [
+    {
+     "value": "not recorded",
+     "trades": 28,
+     "wins": 8,
+     "win_rate": 28.6,
+     "total_r": -4.0,
+     "avg_r": -0.143
+    }
+   ]
+  },
+  {
+   "name": "Session",
+   "rows": [
+    {
+     "value": "not recorded",
+     "trades": 28,
+     "wins": 8,
+     "win_rate": 28.6,
+     "total_r": -4.0,
+     "avg_r": -0.143
+    }
+   ]
+  },
+  {
+   "name": "High-impact news in next 24h",
+   "rows": [
+    {
+     "value": "not recorded",
+     "trades": 28,
+     "wins": 8,
+     "win_rate": 28.6,
+     "total_r": -4.0,
+     "avg_r": -0.143
+    }
+   ]
+  }
+ ]
+}
