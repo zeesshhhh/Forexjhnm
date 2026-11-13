@@ -1,23 +1,23 @@
 factor,value,trades,wins,win_rate,total_r,avg_r
 Timeframe,5m,3,3,100.0,6.0,2.0
+Timeframe,4h,5,2,40.0,1.0,0.2
 Timeframe,15m,12,3,25.0,-3.0,-0.25
-Timeframe,4h,4,1,25.0,-1.0,-0.25
 Timeframe,1h,11,2,18.2,-5.0,-0.455
 Strategy,macd,5,2,40.0,1.0,0.2
+Strategy,ema_rsi,11,4,36.4,1.0,0.091
 Strategy,bollinger,9,3,33.3,0.0,0.0
 Strategy,rsi_reversion,3,1,33.3,0.0,0.0
-Strategy,ema_rsi,10,3,30.0,-1.0,-0.1
 Strategy,confluence,3,0,0.0,-3.0,-1.0
-Buy or sell,SELL,14,5,35.7,1.0,0.071
+Buy or sell,SELL,15,6,40.0,3.0,0.2
 Buy or sell,BUY,16,4,25.0,-4.0,-0.25
-Pair type,gold / silver,3,2,66.7,3.0,1.0
+Pair type,gold / silver,4,3,75.0,5.0,1.25
 Pair type,cross,23,6,26.1,-5.0,-0.217
 Pair type,major,4,1,25.0,-1.0,-0.25
 Pair,XAUUSD,1,1,100.0,2.0,2.0
 Pair,EURCHF,1,1,100.0,2.0,2.0
+Pair,XAGUSD,3,2,66.7,3.0,1.0
 Pair,GBPJPY,4,2,50.0,2.0,0.5
 Pair,USDCHF,2,1,50.0,1.0,0.5
-Pair,XAGUSD,2,1,50.0,1.0,0.5
 Pair,EURGBP,3,1,33.3,0.0,0.0
 Pair,EURNZD,3,1,33.3,0.0,0.0
 Pair,NZDJPY,3,1,33.3,0.0,0.0
@@ -30,11 +30,11 @@ Pair,GBPUSD,1,0,0.0,-1.0,-1.0
 Pair,USDJPY,1,0,0.0,-1.0,-1.0
 Pair,CHFJPY,1,0,0.0,-1.0,-1.0
 Pair,AUDNZD,1,0,0.0,-1.0,-1.0
-Candle pattern,not recorded,30,9,30.0,-3.0,-0.1
-Candle vs trade,not recorded,30,9,30.0,-3.0,-0.1
-Market direction,not recorded,30,9,30.0,-3.0,-0.1
-RSI zone,not recorded,30,9,30.0,-3.0,-0.1
-Volatility,not recorded,30,9,30.0,-3.0,-0.1
-Weekday,not recorded,30,9,30.0,-3.0,-0.1
-Session,not recorded,30,9,30.0,-3.0,-0.1
-High-impact news in next 24h,not recorded,30,9,30.0,-3.0,-0.1
+Candle pattern,not recorded,31,10,32.3,-1.0,-0.032
+Candle vs trade,not recorded,31,10,32.3,-1.0,-0.032
+Market direction,not recorded,31,10,32.3,-1.0,-0.032
+RSI zone,not recorded,31,10,32.3,-1.0,-0.032
+Volatility,not recorded,31,10,32.3,-1.0,-0.032
+Weekday,not recorded,31,10,32.3,-1.0,-0.032
+Session,not recorded,31,10,32.3,-1.0,-0.032
+High-impact news in next 24h,not recorded,31,10,32.3,-1.0,-0.032
