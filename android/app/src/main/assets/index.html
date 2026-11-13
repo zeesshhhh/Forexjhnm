@@ -102,6 +102,14 @@
   .kv div { display:flex; justify-content:space-between; gap:12px; border-bottom:1px solid var(--line); padding:6px 0; }
   .kv span { color:var(--mute); }
   .note { font-size:11px; color:var(--mute); margin-top:12px; }
+  .dl { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+  .zipmsg { font-size:13px; color:var(--mute); margin-top:8px; min-height:18px; }
+  .zipmsg.ok { color:var(--buy); } .zipmsg.bad { color:#fca5a5; }
+  #logs { padding:18px 16px; }
+  .files { margin:12px 0 0; padding:0; list-style:none; display:grid; gap:8px; }
+  .files li { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:10px 12px; font-size:13px; color:var(--mute); }
+  .files b { color:var(--text); font-family:ui-monospace, Menlo, monospace; font-size:12px; display:block; margin-bottom:2px; }
+  .section { font-size:12px; color:var(--mute); text-transform:uppercase; letter-spacing:.06em; margin:16px 0 0; }
   [hidden] { display:none !important; }
 </style>
 </head>
@@ -112,6 +120,7 @@
     <div class="sub" id="sub">Not connected</div>
   </div>
   <div class="hbtns">
+    <button class="icon" id="logsbtn" aria-label="Download logs">&#x2B07;</button>
     <button class="icon" id="refresh" aria-label="Refresh">&#x27F3;</button>
     <button class="icon" id="gear" aria-label="Settings">&#x2699;</button>
   </div>
@@ -149,8 +158,35 @@
     <div class="prices" id="d-prices"></div>
     <div class="result" id="d-result"></div>
     <div class="kv" id="d-kv"></div>
+    <div class="section" id="d-ind-title">Indicators at the signal</div>
+    <div class="kv" id="d-ind"></div>
+    <div class="dl">
+      <button class="btn ghost" id="d-zip">&#x2B07; Download trade log (.zip)</button>
+      <button class="btn ghost" id="d-share" hidden>Share</button>
+    </div>
+    <div class="zipmsg" id="d-zipmsg"></div>
     <div class="note" id="d-note"></div>
   </div>
+</section>
+
+<section class="panel" id="logs" hidden>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="icon" id="logs-back" aria-label="Back">&#x2190;</button>
+    <h1>Download logs</h1>
+  </div>
+  <p class="help">Saves everything the bot has logged as one .zip file in <b>Downloads/FXSignals</b>.</p>
+  <ul class="files">
+    <li><b>logs/trades.csv</b>Every signal: pair, timeframe, strategy, entry / SL / TP, indicators at the signal, and the result.</li>
+    <li><b>logs/market_snapshot.csv</b>Every pair on every timeframe: price, RSI, EMAs, MACD, ATR, Bollinger Bands, the chosen strategy, and why there was or wasn't a signal. Updated hourly.</li>
+    <li><b>logs/scans/</b>One line per scan (every 5 minutes) for the last 30 days: time, data problems, new signals, closed trades.</li>
+    <li><b>logs/last_scan.txt</b>Everything the bot printed in its latest logged scan, including errors.</li>
+    <li><b>signals.json &middot; sent_signals.json &middot; backtest_report</b>The signal history, the list of signals already sent, and the strategy report if you ran it.</li>
+  </ul>
+  <div class="dl">
+    <button class="btn" id="logs-zip">&#x2B07; Download all logs (.zip)</button>
+    <button class="btn ghost" id="logs-share" hidden>Share</button>
+  </div>
+  <div class="zipmsg" id="logs-msg"></div>
 </section>
 
 <section class="panel" id="settings" hidden>
@@ -195,9 +231,11 @@
       pending[id] = resolve;
       var A = window.Android;
       if (A && kind === "github" && A.get) { A.get(url, token || "", id); return; }
+      if (A && kind === "api" && A.api) { A.api(url, token || "", id); return; }
       if (A && kind === "web" && A.fetch) { A.fetch(url, id); return; }
       if (A) { delete pending[id]; resolve({ status: -1, body: "needs app update" }); return; }
-      var h = kind === "github" ? { Accept: "application/vnd.github.raw+json" } : {};   // normal browser (testing)
+      var h = kind === "github" ? { Accept: "application/vnd.github.raw+json" } :
+              kind === "api" ? { Accept: "application/vnd.github+json" } : {};          // normal browser (testing)
       if (token) h.Authorization = "Bearer " + token;
       fetch(url, { headers: h, cache: "no-store" })
         .then(function (r) { return r.text().then(function (t) { window.__httpDone(id, r.status, t); }); })
@@ -624,7 +662,19 @@
       ["RSI at signal", Math.round(s.rsi)]
     ];
     if (s.stats) kv.push(["Backtest", s.stats.trades + " trades, " + Math.round(s.stats.win_rate) + "% win, PF " + Number(s.stats.profit_factor).toFixed(2)]);
+    if (s.stats && s.stats.test_trades != null) kv.push(["On unseen data", s.stats.test_trades + " trades, " + Math.round(s.stats.test_win_rate) + "% win, PF " + Number(s.stats.test_profit_factor).toFixed(2)]);
     $("d-kv").innerHTML = kv.map(function (p) { return "<div><span>" + esc(p[0]) + "</span><b>" + esc(p[1]) + "</b></div>"; }).join("");
+    var ind = s.indicators, il = [];
+    if (ind) {
+      var f = function (v) { return v == null ? "\u2013" : Number(v).toFixed(dp); };
+      il = [["Close", f(ind.close)], ["RSI (14)", ind.rsi14 == null ? "\u2013" : Number(ind.rsi14).toFixed(1)],
+            ["EMA 9 / 21", f(ind.ema9) + " / " + f(ind.ema21)], ["EMA 200 (trend)", f(ind.ema200) + " (" + ind.trend + ")"],
+            ["MACD / signal", Number(ind.macd).toPrecision(3) + " / " + Number(ind.macd_signal).toPrecision(3)],
+            ["ATR (14)", f(ind.atr14) + " (" + ind.atr_pips + " pips)"],
+            ["Bollinger (20, 2)", f(ind.bb_lower) + " \u2013 " + f(ind.bb_upper)]];
+    }
+    $("d-ind").innerHTML = il.map(function (p) { return "<div><span>" + esc(p[0]) + "</span><b>" + esc(p[1]) + "</b></div>"; }).join("");
+    $("d-ind").hidden = $("d-ind-title").hidden = !il.length;
     $("d-note").textContent = (s.pair === "XAUUSD" || s.pair === "XAGUSD")
       ? "Gold and silver levels come from futures prices, which can differ from your broker's spot price by a few dollars."
       : "Prices can differ slightly from your broker's.";
@@ -635,6 +685,7 @@
     var s = byId(id); if (!s) return;
     cur = s;
     $("detail").hidden = false; $("detail").scrollTop = 0;
+    $("d-zipmsg").textContent = ""; $("d-zipmsg").className = "zipmsg"; $("d-share").hidden = true;
     renderDetailInfo();
     showTrade();
   }
@@ -645,7 +696,137 @@
     $("detail").hidden = true;
   }
 
+  // =====================================================================
+  //  Log downloads (.zip saved to Downloads/FXSignals)
+  // =====================================================================
+  var zipPending = {}, zipId = 1;
+  window.__zipDone = function (id, res) { var p = zipPending[id]; delete zipPending[id]; if (p) p(res); };
+
+  function saveZip(entries, name) {
+    return new Promise(function (resolve) {
+      var A = window.Android;
+      if (!A || !A.saveZip) { resolve({ ok: false, error: "Update the app to download logs." }); return; }
+      var id = zipId++;
+      zipPending[id] = resolve;
+      A.saveZip(JSON.stringify(entries), name, cfg().token || "", id);
+    });
+  }
+
+  function stamp() {
+    var d = new Date(), z = function (n) { return (n < 10 ? "0" : "") + n; };
+    return d.getFullYear() + z(d.getMonth() + 1) + z(d.getDate()) + "-" + z(d.getHours()) + z(d.getMinutes());
+  }
+
+  function repoFileUrl(path) {
+    var c = cfg(), p = path.split("/").map(encodeURIComponent).join("/");
+    return c.token
+      ? "https://api.github.com/repos/" + encodeURIComponent(c.user) + "/" + encodeURIComponent(c.repo) + "/contents/" + p
+      : "https://raw.githubusercontent.com/" + encodeURIComponent(c.user) + "/" + encodeURIComponent(c.repo) + "/HEAD/" + p;
+  }
+
+  function appInfo(extra) {
+    var c = cfg();
+    return ["FX Signals app log", "Downloaded: " + new Date().toString(), "Repository: " + c.user + "/" + c.repo,
+            "Signals loaded in app: " + ((state.data && state.data.signals) || []).length,
+            "Last signals update: " + ((state.data && state.data.updated) || "unknown"),
+            "Phone time zone: " + (function () { try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) { return "?"; } })(),
+            "Device: " + navigator.userAgent].concat(extra || []).join("\n") + "\n";
+  }
+
+  function zipResult(msgEl, shareBtn, res) {
+    if (res && res.ok) {
+      msgEl.className = "zipmsg ok";
+      msgEl.textContent = "\u2713 Saved to " + res.where + " (" + res.files + " files" +
+        (res.failed ? ", " + res.failed + " couldn't be downloaded" : "") + ")";
+      shareBtn.hidden = !res.canShare;
+    } else {
+      msgEl.className = "zipmsg bad";
+      msgEl.textContent = "Couldn't save the .zip: " + ((res && res.error) || "unknown error");
+      shareBtn.hidden = true;
+    }
+  }
+
+  function downloadAllLogs() {
+    var c = cfg(), msg = $("logs-msg"), btn = $("logs-zip");
+    if (!c.user || !c.repo) { msg.className = "zipmsg bad"; msg.textContent = "Connect your bot in Settings first."; return; }
+    btn.disabled = true; msg.className = "zipmsg"; msg.textContent = "Finding log files\u2026";
+    var treeUrl = "https://api.github.com/repos/" + encodeURIComponent(c.user) + "/" + encodeURIComponent(c.repo) + "/git/trees/HEAD?recursive=1";
+    request("api", treeUrl, c.token).then(function (r) {
+      var paths = [], note = [];
+      try {
+        if (r.status !== 200) throw new Error("HTTP " + r.status);
+        (JSON.parse(r.body).tree || []).forEach(function (t) {
+          if (t.type !== "blob") return;
+          if (t.path.indexOf("logs/") === 0 || ["signals.json", "sent_signals.json", "backtest_report.md", "backtest_report.json"].indexOf(t.path) >= 0) paths.push(t.path);
+        });
+      } catch (e) {
+        note.push("Couldn't list the repository files (" + e.message + "), so only the main log files were included.");
+        var today = new Date().toISOString().slice(0, 10);
+        paths = ["signals.json", "logs/trades.csv", "logs/market_snapshot.csv", "logs/last_scan.txt", "logs/scans/" + today + ".csv", "backtest_report.md"];
+      }
+      if (!paths.some(function (p) { return p.indexOf("logs/") === 0; })) {
+        note.push("No logs/ folder in the repository yet. Update bot.py and logbook.py, then wait for the next scan.");
+      }
+      msg.textContent = "Downloading " + paths.length + " files\u2026";
+      var entries = paths.map(function (p) { return { name: p, url: repoFileUrl(p), github: !!c.token }; });
+      entries.push({ name: "app_info.txt", text: appInfo(note) });
+      return saveZip(entries, "FXSignals-logs-" + stamp() + ".zip");
+    }).then(function (res) {
+      btn.disabled = false;
+      zipResult(msg, $("logs-share"), res);
+    });
+  }
+
+  function downloadTradeLog() {
+    var s = cur; if (!s) return;
+    var msg = $("d-zipmsg"), btn = $("d-zip"), dp = dps(s), o = outcome(s);
+    btn.disabled = true; msg.className = "zipmsg"; msg.textContent = "Building trade log\u2026";
+    var L = [];
+    L.push(s.pair + " " + s.side + " (" + s.tf + ")  strategy: " + s.strategy);
+    L.push("Signal candle (UTC): " + s.bar_time);
+    L.push("Entry: " + fmt(s.entry, dp) + "   Stop loss: " + fmt(s.sl, dp) + "   Take profit: " + fmt(s.tp, dp));
+    L.push("Stop: " + (Math.abs(s.entry - s.sl) / pip(s.pair)).toFixed(1) + " pips   Target: " + (Math.abs(s.tp - s.entry) / pip(s.pair)).toFixed(1) + " pips");
+    if (o === "open") L.push("Status: OPEN");
+    else L.push("Status: " + (s.status || "").toUpperCase() + "  exit " + fmt(s.exit, dp) + " at " + s.closed_at + "  result " + sgn(s.pips, 1) + " pips (" + sgn(s.result_r, 2) + "R)");
+    if (s.stats) {
+      L.push("Backtest: " + s.stats.trades + " trades, " + s.stats.win_rate + "% win, PF " + s.stats.profit_factor);
+      if (s.stats.test_trades != null) L.push("On unseen data: " + s.stats.test_trades + " trades, " + s.stats.test_win_rate + "% win, PF " + s.stats.test_profit_factor);
+    }
+    if (s.indicators) {
+      L.push("", "Indicators on the signal candle:");
+      Object.keys(s.indicators).forEach(function (k) { L.push("  " + k + ": " + s.indicators[k]); });
+    } else {
+      L.push("", "Indicators: not saved for this signal (it was made before the logging update).");
+    }
+    if (bars.length && mode === "trade") {
+      var dir = s.side === "BUY" ? 1 : -1, now = bars[bars.length - 1].close;
+      L.push("", "Price when this log was saved: " + fmt(now, dp) + " (" + sgn(dir * (now - s.entry) / pip(s.pair), 1) + " pips)");
+    }
+    var entries = [
+      { name: "trade_summary.txt", text: L.join("\n") + "\n" },
+      { name: "trade.json", text: JSON.stringify(s, null, 2) + "\n" },
+      { name: "candles_yahoo.json", url: yahooUrl(s), github: false },
+      { name: "app_info.txt", text: appInfo() }
+    ];
+    if (bars.length) {
+      var csv = ["time_utc,open,high,low,close"].concat(bars.map(function (b) {
+        return new Date((b.time - TZ) * 1000).toISOString() + "," + b.open + "," + b.high + "," + b.low + "," + b.close;
+      }));
+      entries.splice(2, 0, { name: "candles.csv", text: csv.join("\n") + "\n" });
+    }
+    saveZip(entries, "FXSignals-trade-" + s.pair + "-" + s.tf + "-" + stamp() + ".zip").then(function (res) {
+      btn.disabled = false;
+      zipResult(msg, $("d-share"), res);
+    });
+  }
+
   // ---------- events ----------
+  $("logsbtn").onclick = function () { $("logs").hidden = false; };
+  $("logs-back").onclick = function () { $("logs").hidden = true; };
+  $("logs-zip").onclick = downloadAllLogs;
+  $("logs-share").onclick = function () { if (window.Android && window.Android.shareLast) window.Android.shareLast(); };
+  $("d-zip").onclick = downloadTradeLog;
+  $("d-share").onclick = function () { if (window.Android && window.Android.shareLast) window.Android.shareLast(); };
   $("gear").onclick = openSettings;
   $("refresh").onclick = refresh;
   $("chips").onclick = function (e) {
@@ -670,6 +851,7 @@
 
   window.onBack = function () {
     if (!$("settings").hidden) { $("settings").hidden = true; return true; }
+    if (!$("logs").hidden) { $("logs").hidden = true; return true; }
     if (!$("detail").hidden) { closeDetail(); return true; }
     return false;
   };
