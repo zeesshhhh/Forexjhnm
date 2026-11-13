@@ -1,6 +1,25 @@
 {
- "updated": "2026-11-13T00:41:51.497488+00:00",
+ "updated": "2026-11-13T07:22:02.947150+00:00",
  "signals": [
+  {
+   "id": "CADJPY|1h|2026-11-13T06:00:00+00:00",
+   "pair": "CADJPY",
+   "tf": "1h",
+   "side": "SELL",
+   "strategy": "macd",
+   "entry": 112.071999,
+   "sl": 112.289534,
+   "tp": 111.636927,
+   "rsi": 47.7,
+   "decimals": 3,
+   "bar_time": "2026-11-13T06:00:00+00:00",
+   "stats": {
+    "trades": 60,
+    "win_rate": 46.7,
+    "profit_factor": 1.75
+   },
+   "status": "open"
+  },
   {
    "id": "GBPCHF|1d|2026-11-12T00:00:00+00:00",
    "pair": "GBPCHF",
@@ -75,7 +94,11 @@
     "win_rate": 42.1,
     "profit_factor": 1.45
    },
-   "status": "open"
+   "status": "sl",
+   "exit": 1.622855,
+   "closed_at": "2026-11-12T22:00:00+00:00",
+   "pips": -18.5,
+   "result_r": -1.0
   },
   {
    "id": "USDJPY|4h|2026-11-12T04:00:00+00:00",
