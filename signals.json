@@ -1,6 +1,63 @@
 {
- "updated": "2026-11-12T19:36:50.870014+00:00",
+ "updated": "2026-11-13T00:41:51.497488+00:00",
  "signals": [
+  {
+   "id": "GBPCHF|1d|2026-11-12T00:00:00+00:00",
+   "pair": "GBPCHF",
+   "tf": "1d",
+   "side": "BUY",
+   "strategy": "ema_rsi",
+   "entry": 1.1048,
+   "sl": 1.095652,
+   "tp": 1.123096,
+   "rsi": 56.0,
+   "decimals": 5,
+   "bar_time": "2026-11-12T00:00:00+00:00",
+   "stats": {
+    "trades": 18,
+    "win_rate": 44.4,
+    "profit_factor": 1.6
+   },
+   "status": "open"
+  },
+  {
+   "id": "EURCAD|4h|2026-11-12T20:00:00+00:00",
+   "pair": "EURCAD",
+   "tf": "4h",
+   "side": "BUY",
+   "strategy": "bollinger",
+   "entry": 1.57571,
+   "sl": 1.57117,
+   "tp": 1.584789,
+   "rsi": 41.3,
+   "decimals": 5,
+   "bar_time": "2026-11-12T20:00:00+00:00",
+   "stats": {
+    "trades": 67,
+    "win_rate": 40.3,
+    "profit_factor": 1.35
+   },
+   "status": "open"
+  },
+  {
+   "id": "AUDCHF|5m|2026-11-13T00:35:00+00:00",
+   "pair": "AUDCHF",
+   "tf": "5m",
+   "side": "SELL",
+   "strategy": "confluence",
+   "entry": 0.56841,
+   "sl": 0.569677,
+   "tp": 0.565876,
+   "rsi": 43.1,
+   "decimals": 5,
+   "bar_time": "2026-11-13T00:35:00+00:00",
+   "stats": {
+    "trades": 50,
+    "win_rate": 38.0,
+    "profit_factor": 1.17
+   },
+   "status": "open"
+  },
   {
    "id": "EURAUD|15m|2026-11-12T19:15:00+00:00",
    "pair": "EURAUD",
