@@ -46,6 +46,38 @@ def decimals(pair):
     return 2 if pair.startswith("XA") else 3 if "JPY" in pair else 5
 
 
+CONV = {"EUR": "EURUSD", "GBP": "GBPUSD", "AUD": "AUDUSD", "NZD": "NZDUSD",
+        "JPY": "USDJPY", "CHF": "USDCHF", "CAD": "USDCAD"}
+
+
+def rates_from(dfs):
+    """Latest prices of the 7 USD pairs, to turn pips into dollars."""
+    out = {}
+    for (pair, tf), df in dfs.items():
+        if df is None or df.empty or pair not in CONV.values():
+            continue
+        if pair not in out or tf in ("5m", "15m"):
+            out[pair] = float(df["Close"].iloc[-1])
+    return out
+
+
+def usd_per_pip_1lot(pair, rates):
+    """Dollar value of 1 pip for 1.00 lot (100,000 units; gold 100 oz; silver 5,000 oz)."""
+    if pair == "XAUUSD":
+        return 10.0
+    if pair == "XAGUSD":
+        return 50.0
+    q = pair[3:]
+    if q == "USD":
+        to_usd = 1.0
+    elif q in ("JPY", "CHF", "CAD"):
+        r = rates.get("USD" + q)
+        to_usd = 1.0 / r if r else None
+    else:
+        to_usd = rates.get(q + "USD")
+    return None if to_usd is None else 100000 * pip_size(pair) * to_usd
+
+
 def _now():
     return pd.Timestamp.now(tz="UTC")
 
@@ -64,8 +96,8 @@ def load_state():
     st.setdefault("pending", {"new": [], "closed": []})
     st.setdefault("last_digest", "")
     st.setdefault("totals", {"closed": 0, "won": 0, "lost": 0, "total_r": 0.0, "total_pips": 0.0})
-    st["totals"].setdefault("won_r", 0.0)
-    st["totals"].setdefault("lost_r", 0.0)
+    for k in ("won_r", "lost_r", "usd_1lot", "won_usd_1lot", "lost_usd_1lot"):
+        st["totals"].setdefault(k, 0.0)
     return st
 
 
@@ -211,6 +243,7 @@ def run(dfs, events=None, notify=None, dry=False):
     tfs = getattr(config, "LAB_TIMEFRAMES", list(LEN))
 
     # 1) results for open lab trades
+    rates = rates_from(dfs)
     still, closed_now = [], []
     for t in st["open"]:
         df = dfs.get((t["pair"], t["tf"]))
@@ -227,6 +260,12 @@ def run(dfs, events=None, notify=None, dry=False):
         tot["total_pips"] = round(tot["total_pips"] + t["pips"], 1)
         k = "won_r" if t["result_r"] > 0 else "lost_r"
         tot[k] = round(tot[k] + t["result_r"], 2)
+        v = usd_per_pip_1lot(t["pair"], rates)               # dollars at 1.00 lot, for the lot-size paper account
+        if v is not None:
+            t["usd_1lot"] = round(t["pips"] * v, 2)
+            tot["usd_1lot"] = round(tot["usd_1lot"] + t["usd_1lot"], 2)
+            k2 = "won_usd_1lot" if t["result_r"] > 0 else "lost_usd_1lot"
+            tot[k2] = round(tot[k2] + t["usd_1lot"], 2)
         st["pending"]["closed"].append({"r": t["result_r"]})
     st["recent_closed"] = (sorted(closed_now, key=lambda t: t["closed_at"], reverse=True) + st["recent_closed"])[:RECENT_CLOSED]
 
