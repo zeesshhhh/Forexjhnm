@@ -35,7 +35,7 @@ SNAPSHOT_COLS = (["scan_time_utc", "pair", "tf", "candles", "strategy", "backtes
                   "backtest_pf", "unseen_trades", "unseen_pf", "signal", "note"] + INDICATOR_COLS)
 
 SCAN_COLS = ["scan_time_utc", "seconds", "checked", "no_data", "new_signals", "skipped_same_currency",
-             "skipped_max_open", "trades_closed", "open_trades", "errors"]
+             "skipped_max_open", "trades_closed", "open_trades", "lab_new", "lab_closed", "lab_open", "errors"]
 
 README = __doc__
 
@@ -218,6 +218,21 @@ def write_all(signals, pip_size, snapshots, summary, printed, force=False):
     day = pd.Timestamp(summary["scan_time_utc"]).strftime("%Y-%m-%d")
     path = _path("scans", f"{day}.csv")
     new_file = not os.path.exists(path)
+    if not new_file:                                   # columns changed by an update: rewrite with the new header
+        with open(path, newline="") as f:
+            old_rows = list(csv.reader(f))
+        if old_rows and old_rows[0] != SCAN_COLS:
+            hdr = old_rows[0]
+            fixed = []
+            for r in old_rows[1:]:
+                cols = hdr if len(r) == len(hdr) else (SCAN_COLS if len(r) == len(SCAN_COLS) else None)
+                if cols:
+                    fixed.append(dict(zip(cols, r)))
+            with open(path, "w", newline="") as f:
+                w = csv.DictWriter(f, fieldnames=SCAN_COLS, extrasaction="ignore")
+                w.writeheader()
+                for r in fixed:
+                    w.writerow({k: r.get(k, "") for k in SCAN_COLS})
     with open(path, "a", newline="") as f:
         w = csv.DictWriter(f, fieldnames=SCAN_COLS, extrasaction="ignore")
         if new_file:
