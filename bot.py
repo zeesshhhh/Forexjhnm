@@ -15,6 +15,7 @@ import requests
 
 import config
 import features
+import lab
 import logbook
 from backtest import backtest
 from data import INTERVAL_LEN, get_candles
@@ -22,25 +23,49 @@ from strategies import STRATEGIES, atr, ema, macd, rsi
 
 
 # ---------------- notifications ----------------
+NTFY_PRIORITY = {"min": 1, "low": 2, "default": 3, "high": 4, "max": 5, "urgent": 5}
+
+
 def notify(title, body, priority="high", tags="chart_with_upwards_trend"):
+    """Sends to ntfy and/or Telegram. ntfy gets JSON, which (unlike HTTP headers) can carry emoji."""
     sent = False
     if config.NTFY_TOPIC:
         try:
-            requests.post(f"{config.NTFY_SERVER}/{config.NTFY_TOPIC}", data=body.encode(),
-                          headers={"Title": title, "Priority": priority, "Tags": tags}, timeout=15)
-            sent = True
+            r = requests.post(config.NTFY_SERVER.rstrip("/"), timeout=15, json={
+                "topic": config.NTFY_TOPIC, "title": title, "message": body,
+                "priority": NTFY_PRIORITY.get(priority, 3), "tags": [t for t in tags.split(",") if t]})
+            if r.status_code >= 400:
+                print(f"[ntfy] HTTP {r.status_code}: {r.text[:200]}")
+            else:
+                sent = True
         except Exception as e:
             print(f"[ntfy] {e}")
     if config.TELEGRAM_TOKEN and config.TELEGRAM_CHAT_ID:
         try:
-            requests.post(f"https://api.telegram.org/bot{config.TELEGRAM_TOKEN}/sendMessage",
-                          json={"chat_id": config.TELEGRAM_CHAT_ID, "text": f"{title}\n\n{body}"}, timeout=15)
-            sent = True
+            r = requests.post(f"https://api.telegram.org/bot{config.TELEGRAM_TOKEN}/sendMessage",
+                              json={"chat_id": config.TELEGRAM_CHAT_ID, "text": f"{title}\n\n{body}"}, timeout=15)
+            if r.status_code >= 400:
+                print(f"[telegram] HTTP {r.status_code}: {r.text[:200]}")
+            else:
+                sent = True
         except Exception as e:
             print(f"[telegram] {e}")
-    if not sent:
+    if not sent and not (config.NTFY_TOPIC or (config.TELEGRAM_TOKEN and config.TELEGRAM_CHAT_ID)):
         print("[notify] No NTFY_TOPIC or Telegram set; printing only.")
     return sent
+
+
+def confirm_notifications_once():
+    """After this fix, sends one test alert so you can see notifications work. Remembered in logs/."""
+    flag = os.path.join(getattr(config, "LOG_DIR", "logs"), "notifications_ok.txt")
+    if os.path.exists(flag) or not (config.NTFY_TOPIC or (config.TELEGRAM_TOKEN and config.TELEGRAM_CHAT_ID)):
+        return
+    if notify("\u2705 FX bot notifications are working",
+              "Signals and TP / SL results will arrive here. Daily signals come about 5 AM Pakistan time.",
+              priority="default", tags="white_check_mark"):
+        os.makedirs(os.path.dirname(flag), exist_ok=True)
+        with open(flag, "w") as f:
+            f.write(f"Test alert sent {pd.Timestamp.now(tz='UTC').isoformat()}\n")
 
 
 # ---------------- state (no duplicate alerts) ----------------
@@ -344,6 +369,8 @@ def scan(dry=False):
             r.setdefault("id", f"{r['pair']}|{r['tf']}|{r['bar_time']}")
             r.setdefault("status", "open")
         global NEWS_EVENTS
+        if not dry:
+            confirm_notifications_once()
         try:
             NEWS_EVENTS = features.refresh_news()
         except Exception as e:
@@ -353,14 +380,18 @@ def scan(dry=False):
         changed = False
         snaps = []
         signal_tfs = getattr(config, "SIGNAL_TIMEFRAMES", list(config.TIMEFRAMES))
+        lab_tfs = getattr(config, "LAB_TIMEFRAMES", []) if getattr(config, "LAB_ENABLED", False) else []
+        lab_dfs = {}
         for tf in config.TIMEFRAMES:
             for pair in config.SYMBOLS:
                 makes_signals = tf in signal_tfs
                 has_open = any(r["pair"] == pair and r["tf"] == tf and r.get("status", "open") == "open" for r in rows)
-                if not makes_signals and not has_open:
+                if not makes_signals and not has_open and tf not in lab_tfs:
                     continue                                 # nothing to do on this chart
                 checked += 1
                 df = get_candles(pair, tf)
+                if tf in lab_tfs:
+                    lab_dfs[(pair, tf)] = df
                 if df is None:
                     no_data += 1
                 for row in update_results(rows, pair, tf, df):
@@ -405,6 +436,13 @@ def scan(dry=False):
                 rows.insert(0, to_row(sig))
                 found += 1
                 changed = True
+        lab_res = {"new": 0, "closed": 0, "open": 0}
+        if lab_tfs:
+            try:
+                lab_res = lab.run(lab_dfs, NEWS_EVENTS, None if dry else notify, dry)
+                print(f"[lab] {lab_res['new']} new paper trades, {lab_res['closed']} closed, {lab_res['open']} open")
+            except Exception as e:
+                print(f"[lab error] {e}")
         if not dry:
             save_state(state)
             if changed:
@@ -419,7 +457,8 @@ def scan(dry=False):
                   or ln.startswith("[data]") or ln.startswith("[ntfy]") or ln.startswith("[telegram]")]
         summary = {"scan_time_utc": scan_time, "seconds": round(secs), "checked": checked, "no_data": no_data,
                    "new_signals": found, "skipped_same_currency": skipped, "skipped_max_open": skipped_max,
-                   "trades_closed": closed_n,
+                   "trades_closed": closed_n, "lab_new": lab_res["new"], "lab_closed": lab_res["closed"],
+                   "lab_open": lab_res["open"],
                    "open_trades": sum(1 for r in rows if r.get("status", "open") == "open"),
                    "errors": " | ".join(errors[:3])[:300]}
         try:
