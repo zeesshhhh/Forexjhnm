@@ -27,8 +27,7 @@ def get_candles(pair, tf):
 
 
 def drop_open_candle(df, tf):
-    if tf == "1d":
-        today = pd.Timestamp.now(tz="UTC").normalize()
-        return df[df.index.tz_convert("UTC").normalize() < today]
+    """A candle counts only once its full period has passed. Works for daily candles too, whether
+    Yahoo starts them at 00:00 or 23:00 UTC (London summer time), so a half-finished day is never used."""
     now = pd.Timestamp.now(tz="UTC")
     return df[df.index + pd.Timedelta(INTERVAL_LEN[tf]) <= now]
