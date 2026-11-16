@@ -1,18 +1,18 @@
 {
- "closed_trades": 31,
- "last_closed_utc": "2026-11-13T18:00:00+00:00",
- "total_r": -1.0,
+ "closed_trades": 32,
+ "last_closed_utc": "2026-11-16T02:05:00+00:00",
+ "total_r": -0.75,
  "factors": [
   {
    "name": "Timeframe",
    "rows": [
     {
      "value": "5m",
-     "trades": 3,
-     "wins": 3,
+     "trades": 4,
+     "wins": 4,
      "win_rate": 100.0,
-     "total_r": 6.0,
-     "avg_r": 2.0
+     "total_r": 6.25,
+     "avg_r": 1.562
     },
     {
      "value": "4h",
@@ -77,11 +77,11 @@
     },
     {
      "value": "confluence",
-     "trades": 3,
-     "wins": 0,
-     "win_rate": 0.0,
-     "total_r": -3.0,
-     "avg_r": -1.0
+     "trades": 4,
+     "wins": 1,
+     "win_rate": 25.0,
+     "total_r": -2.75,
+     "avg_r": -0.688
     }
    ]
   },
@@ -90,11 +90,11 @@
    "rows": [
     {
      "value": "SELL",
-     "trades": 15,
-     "wins": 6,
-     "win_rate": 40.0,
-     "total_r": 3.0,
-     "avg_r": 0.2
+     "trades": 16,
+     "wins": 7,
+     "win_rate": 43.8,
+     "total_r": 3.25,
+     "avg_r": 0.203
     },
     {
      "value": "BUY",
@@ -119,11 +119,11 @@
     },
     {
      "value": "cross",
-     "trades": 23,
-     "wins": 6,
-     "win_rate": 26.1,
-     "total_r": -5.0,
-     "avg_r": -0.217
+     "trades": 24,
+     "wins": 7,
+     "win_rate": 29.2,
+     "total_r": -4.75,
+     "avg_r": -0.198
     },
     {
      "value": "major",
@@ -177,6 +177,14 @@
      "win_rate": 50.0,
      "total_r": 1.0,
      "avg_r": 0.5
+    },
+    {
+     "value": "AUDCHF",
+     "trades": 1,
+     "wins": 1,
+     "win_rate": 100.0,
+     "total_r": 0.25,
+     "avg_r": 0.25
     },
     {
      "value": "EURGBP",
@@ -281,11 +289,11 @@
    "rows": [
     {
      "value": "not recorded",
-     "trades": 31,
-     "wins": 10,
-     "win_rate": 32.3,
-     "total_r": -1.0,
-     "avg_r": -0.032
+     "trades": 32,
+     "wins": 11,
+     "win_rate": 34.4,
+     "total_r": -0.75,
+     "avg_r": -0.023
     }
    ]
   },
@@ -294,11 +302,11 @@
    "rows": [
     {
      "value": "not recorded",
-     "trades": 31,
-     "wins": 10,
-     "win_rate": 32.3,
-     "total_r": -1.0,
-     "avg_r": -0.032
+     "trades": 32,
+     "wins": 11,
+     "win_rate": 34.4,
+     "total_r": -0.75,
+     "avg_r": -0.023
     }
    ]
   },
@@ -307,11 +315,11 @@
    "rows": [
     {
      "value": "not recorded",
-     "trades": 31,
-     "wins": 10,
-     "win_rate": 32.3,
-     "total_r": -1.0,
-     "avg_r": -0.032
+     "trades": 32,
+     "wins": 11,
+     "win_rate": 34.4,
+     "total_r": -0.75,
+     "avg_r": -0.023
     }
    ]
   },
@@ -320,11 +328,11 @@
    "rows": [
     {
      "value": "not recorded",
-     "trades": 31,
-     "wins": 10,
-     "win_rate": 32.3,
-     "total_r": -1.0,
-     "avg_r": -0.032
+     "trades": 32,
+     "wins": 11,
+     "win_rate": 34.4,
+     "total_r": -0.75,
+     "avg_r": -0.023
     }
    ]
   },
@@ -333,11 +341,11 @@
    "rows": [
     {
      "value": "not recorded",
-     "trades": 31,
-     "wins": 10,
-     "win_rate": 32.3,
-     "total_r": -1.0,
-     "avg_r": -0.032
+     "trades": 32,
+     "wins": 11,
+     "win_rate": 34.4,
+     "total_r": -0.75,
+     "avg_r": -0.023
     }
    ]
   },
@@ -346,11 +354,11 @@
    "rows": [
     {
      "value": "not recorded",
-     "trades": 31,
-     "wins": 10,
-     "win_rate": 32.3,
-     "total_r": -1.0,
-     "avg_r": -0.032
+     "trades": 32,
+     "wins": 11,
+     "win_rate": 34.4,
+     "total_r": -0.75,
+     "avg_r": -0.023
     }
    ]
   },
@@ -359,11 +367,11 @@
    "rows": [
     {
      "value": "not recorded",
-     "trades": 31,
-     "wins": 10,
-     "win_rate": 32.3,
-     "total_r": -1.0,
-     "avg_r": -0.032
+     "trades": 32,
+     "wins": 11,
+     "win_rate": 34.4,
+     "total_r": -0.75,
+     "avg_r": -0.023
     }
    ]
   },
@@ -372,11 +380,11 @@
    "rows": [
     {
      "value": "not recorded",
-     "trades": 31,
-     "wins": 10,
-     "win_rate": 32.3,
-     "total_r": -1.0,
-     "avg_r": -0.032
+     "trades": 32,
+     "wins": 11,
+     "win_rate": 34.4,
+     "total_r": -0.75,
+     "avg_r": -0.023
     }
    ]
   }
