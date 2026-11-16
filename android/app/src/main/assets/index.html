@@ -310,9 +310,21 @@
   <div class="help">Used for the $ value shown under each trade. 0.01 = micro lot, 0.1 = mini lot, 1 = standard lot.</div>
   <label for="s-bal">Paper account starting balance ($)</label>
   <input id="s-bal" inputmode="decimal" autocomplete="off" placeholder="1000">
-  <label for="s-risk">Paper account risk per trade (%)</label>
-  <input id="s-risk" inputmode="decimal" autocomplete="off" placeholder="1">
-  <div class="help">The paper account pretends you took every signal, risking the same amount on each one: this % of the starting balance. A trade that hits its stop loses exactly that amount, and one that hits its take profit wins twice that.</div>
+  <label>Paper account trade size</label>
+  <div class="modes" id="s-sizing" style="margin:0">
+    <button class="mode" type="button" data-size="risk">Risk % per trade</button>
+    <button class="mode" type="button" data-size="lot">Fixed lot size</button>
+  </div>
+  <div id="s-risk-box">
+    <label for="s-risk">Risk per trade (%)</label>
+    <input id="s-risk" inputmode="decimal" autocomplete="off" placeholder="1">
+    <div class="help">Every trade risks the same amount: this % of the starting balance. A stop loss loses exactly that, and a take profit wins twice that. Best for judging the strategy, because every pair counts equally.</div>
+  </div>
+  <div id="s-plot-box">
+    <label for="s-plot">Paper lot size</label>
+    <input id="s-plot" inputmode="decimal" autocomplete="off" placeholder="0.01">
+    <div class="help">Every trade uses this lot size, like a real account: 0.01 = micro, 0.1 = mini, 1 = standard. Note: at the same lot, gold and silver move far more dollars per pip than currency pairs, so a few metal trades can outweigh many others.</div>
+  </div>
   <div class="row" style="margin-top:12px"><button class="btn ghost" id="s-reset">Start paper account fresh from now</button></div>
   <div class="help" id="s-resetmsg"></div>
   <div class="row">
@@ -324,7 +336,8 @@
 <script>
 (function () {
   var TFS = ["All", "5m", "15m", "1h", "4h", "1d"];
-  var STATUSES = [["all", "Any result"], ["open", "Open"], ["won", "Won"], ["lost", "Lost"]];
+  var STATUSES = [["all", "Any result"], ["open", "Open"], ["winning", "\u25B2 Winning now"], ["losing", "\u25BC Losing now"],
+                  ["won", "Won"], ["lost", "Lost"]];
   var state = { tf: "All", st: "all", q: "", data: null, loading: false, group: null, mode: "main", lastLoad: 0 };
   var $ = function (id) { return document.getElementById(id); };
   var NAMES = { XAUUSD: "gold", XAGUSD: "silver" };
@@ -446,7 +459,7 @@
   // =====================================================================
   //  Live prices for the cards ("Now" line + profit / loss)
   // =====================================================================
-  var prices = {}, priceBusy = false, lastPriceFetch = 0, wantedPairs = [];
+  var prices = {}, priceBusy = false, lastPriceFetch = 0, wantedPairs = [], triedAt = {};
   function lotSize() { var v = parseFloat(load("lot", "0.01")); return isFinite(v) && v > 0 ? v : 0.01; }
   function quoteToUSD(cur) {
     if (cur === "USD") return 1;
@@ -460,9 +473,9 @@
     var q = quoteToUSD(pair.slice(3));
     return q == null ? null : 100000 * pip(pair) * q;
   }
-  function dollars(s, pips) {
+  function dollars(s, pips, lot) {
     var v = pipValueUSD(s.pair);
-    return v == null ? null : pips * v * lotSize();
+    return v == null ? null : pips * v * (lot || lotSize());
   }
   function money(v) { return (v < 0 ? "−$" : "+$") + Math.abs(v).toFixed(Math.abs(v) < 100 ? 2 : 0); }
   function convPair(cur) {
@@ -485,6 +498,7 @@
   }
 
   function updateLiveLines() {
+    if ((state.st === "winning" || state.st === "losing") && !cur) { render(); return; }   // membership moves with price
     var nodes = document.querySelectorAll("[data-live]");
     for (var i = 0; i < nodes.length; i++) {
       var s = byId(nodes[i].getAttribute("data-live"));
@@ -518,11 +532,13 @@
       set[s.pair] = 1;
       var c = convPair(s.pair.slice(3)); if (c) set[c] = 1;
     });
+    var lotMode = paperSizing() === "lot";
     paperPriceRows().forEach(function (s) {             // paper account: live price for its open trades
       if ((s.status || "open") === "open") set[s.pair] = 1;
+      if (lotMode) { var c2 = convPair(s.pair.slice(3)); if (c2) set[c2] = 1; }   // and rates to turn pips into $
     });
     wantedPairs = Object.keys(set);
-    var missing = wantedPairs.some(function (p) { return !prices[p]; });
+    var missing = wantedPairs.some(function (p) { return !prices[p] && !(Date.now() - (triedAt[p] || 0) < 30000); });
     if (missing || Date.now() - lastPriceFetch > 30000) fetchPrices();
   }
 
@@ -531,6 +547,7 @@
     if (!marketState().open && wantedPairs.every(function (p) { return prices[p]; })) return;   // weekend: prices don't move
     priceBusy = true; lastPriceFetch = Date.now();
     var jobs = wantedPairs.map(function (pair) {
+      triedAt[pair] = Date.now();
       var url = "https://query1.finance.yahoo.com/v8/finance/chart/" + yahooSymbol(pair) + "?interval=1d&range=1d";
       return request("web", url).then(function (r) {
         if (r.status !== 200) return;
@@ -549,6 +566,8 @@
   function paperStartBalance() { var v = parseFloat(load("paper_bal", "1000")); return isFinite(v) && v > 0 ? v : 1000; }
   function paperSince() { return load("paper_start", ""); }          // "" = all signals
   function paperRiskPct() { var v = parseFloat(load("paper_risk", "1")); return isFinite(v) && v > 0 ? v : 1; }
+  function paperSizing() { return load("paper_sizing", "risk") === "lot" ? "lot" : "risk"; }
+  function paperLot() { var v = parseFloat(load("paper_lot", "0.01")); return isFinite(v) && v > 0 ? v : 0.01; }
   function rNow(s, price) {                                          // live result in R (1R = the amount risked)
     var risk = Math.abs(s.entry - s.sl) || 1e-9;
     return (s.side === "BUY" ? 1 : -1) * (price - s.entry) / risk;
@@ -579,10 +598,15 @@
     var start = paperStartBalance(), labMode = state.mode === "lab" && state.data.totals;
     var trades = labMode ? (state.data.signals || []).filter(function (x) { return x.status === "open"; }) : paperTrades();
     var riskUsd = start * paperRiskPct() / 100;                      // the same dollar risk on every trade
+    var byLot = paperSizing() === "lot", plot = paperLot();
     var realized = 0, gains = 0, losses = 0, floating = 0, won = 0, lost = 0, open = 0, missing = 0;
     if (labMode) {                                                   // whole lab history, from the bot's totals
       var T = state.data.totals;
-      realized = (T.total_r || 0) * riskUsd; gains = (T.won_r || 0) * riskUsd; losses = (T.lost_r || 0) * riskUsd;
+      if (byLot) {
+        realized = (T.usd_1lot || 0) * plot; gains = (T.won_usd_1lot || 0) * plot; losses = (T.lost_usd_1lot || 0) * plot;
+      } else {
+        realized = (T.total_r || 0) * riskUsd; gains = (T.won_r || 0) * riskUsd; losses = (T.lost_r || 0) * riskUsd;
+      }
       won = T.won || 0; lost = T.lost || 0;
     }
     trades.forEach(function (s) {
@@ -591,10 +615,17 @@
         open++;
         var q = prices[s.pair];
         if (!q) { missing++; return; }
-        floating += rNow(s, q.price) * riskUsd;
+        if (byLot) {
+          var fd = dollars(s, (s.side === "BUY" ? 1 : -1) * (q.price - s.entry) / pip(s.pair), plot);
+          if (fd == null) { missing++; return; }
+          floating += fd;
+        } else {
+          floating += rNow(s, q.price) * riskUsd;
+        }
         return;
       }
-      var v = rClosed(s) * riskUsd;
+      var v = byLot ? dollars(s, s.pips || 0, plot) : rClosed(s) * riskUsd;
+      if (v == null) { missing++; return; }
       realized += v;
       if (v >= 0) { gains += v; won++; } else { losses += v; lost++; }
     });
@@ -613,7 +644,7 @@
     $("p-count").textContent = won + " won · " + lost + " lost · " + open + " open";
     var since = paperSince();
     $("p-since").textContent = (labMode ? "lab since " + when(state.data.started) : (since ? "since " + when(since) : "all signals")) +
-      " · risk " + paperRiskPct() + "% (" + usd2(riskUsd) + ") per trade";
+      " · " + (byLot ? plot + " lot per trade" : "risk " + paperRiskPct() + "% (" + usd2(riskUsd) + ") per trade");
     $("p-note").textContent = missing ? "Waiting for live prices for " + missing + " trade" + (missing > 1 ? "s" : "") + "…" : "";
   }
 
@@ -636,6 +667,11 @@
     var q = state.q.trim().toUpperCase().replace(/[\/\s]/g, "");
     if (state.tf !== "All" && s.tf !== state.tf) return false;
     if (q && s.pair.indexOf(q) < 0 && (NAMES[s.pair] || "").toUpperCase().indexOf(q) < 0) return false;
+    if (withStatus && (state.st === "winning" || state.st === "losing")) {   // open trades, by live profit / loss
+      if (outcome(s) !== "open" || !prices[s.pair]) return false;
+      var live = (s.side === "BUY" ? 1 : -1) * (prices[s.pair].price - s.entry);
+      return state.st === "winning" ? live > 0 : live < 0;
+    }
     if (withStatus && state.st !== "all" && outcome(s) !== state.st) return false;
     return true;
   }
@@ -681,7 +717,13 @@
     renderPaper();
     var rows = all.filter(function (s) { return matches(s, true); });
     if (!rows.length) {
-      wantPrices([]);
+      wantPrices(all.filter(function (x) { return outcome(x) === "open"; }));
+      if (state.st === "winning" || state.st === "losing") {
+        var anyOpen = all.some(function (x) { return outcome(x) === "open" && matches(x, false); });
+        list.innerHTML = '<div class="empty"><b>' + (state.st === "winning" ? "No open trades in profit right now" : "No open trades in loss right now") +
+          "</b>" + (anyOpen ? "Live prices refresh every 30 seconds." : "There are no open trades with these filters.") + "</div>";
+        return;
+      }
       list.innerHTML = '<div class="empty"><b>No signals here yet</b>The bot only sends a signal when one of its strategies triggers. ' +
         "Quiet periods are normal.</div>";
       return;
@@ -789,7 +831,8 @@
   function openSettings() {
     var c = cfg();
     $("s-user").value = c.user; $("s-repo").value = c.repo; $("s-token").value = c.token; $("s-lot").value = lotSize();
-    $("s-bal").value = paperStartBalance(); $("s-risk").value = paperRiskPct();
+    $("s-bal").value = paperStartBalance(); $("s-risk").value = paperRiskPct(); $("s-plot").value = paperLot();
+    showSizing(paperSizing());
     resetArmed = false; $("s-reset").textContent = "Start paper account fresh from now";
     $("s-resetmsg").textContent = paperSince() ? "Counting signals since " + when(paperSince()) + "." : "Counting all signals so far.";
     $("settings").hidden = false;
@@ -802,9 +845,21 @@
     save("paper_bal", isFinite(bal) && bal > 0 ? String(bal) : "1000");
     var rk = parseFloat(($("s-risk").value || "").replace(",", ".").replace("%", ""));
     save("paper_risk", isFinite(rk) && rk > 0 && rk <= 20 ? String(rk) : "1");
+    var pl = parseFloat(($("s-plot").value || "").replace(",", "."));
+    save("paper_lot", isFinite(pl) && pl > 0 && pl <= 100 ? String(pl) : "0.01");
+    save("paper_sizing", sizingChoice);
     $("settings").hidden = true; state.data = null; refresh();
   };
   $("s-cancel").onclick = function () { $("settings").hidden = true; };
+  var sizingChoice = "risk";
+  function showSizing(m) {
+    sizingChoice = m === "lot" ? "lot" : "risk";
+    var b = document.querySelectorAll("#s-sizing .mode");
+    for (var i = 0; i < b.length; i++) b[i].classList.toggle("on", b[i].getAttribute("data-size") === sizingChoice);
+    $("s-risk-box").hidden = sizingChoice !== "risk";
+    $("s-plot-box").hidden = sizingChoice !== "lot";
+  }
+  $("s-sizing").onclick = function (e) { var b = e.target.closest(".mode"); if (b) showSizing(b.getAttribute("data-size")); };
   var resetArmed = false;
   $("s-reset").onclick = function () {
     if (!resetArmed) {                                   // two taps, so it can't happen by accident
@@ -1357,7 +1412,9 @@
   };
   $("schips").onclick = function (e) {
     var t = e.target.getAttribute("data-st"); if (!t) return;
-    state.st = t; renderChips(); render();
+    state.st = t;
+    if (t === "winning" || t === "losing") state.group = "open";     // show those trades straight away
+    renderChips(); render();
   };
   $("search").oninput = function (e) { state.q = e.target.value; render(); };
   $("list").onclick = function (e) {
