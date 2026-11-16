@@ -62,6 +62,15 @@ MAX_OPEN_TRADES = 6
 SL_ATR = 1.5
 TP_ATR = 3.0                 # 1:2 risk/reward
 
+# ---------- Paper-trading lab (paper only, never sent to a broker) ----------
+# Every pair x timeframe x strategy below is paper-traded in the background, so the logs show
+# which ones make money on live prices. Lab alerts come as one summary every LAB_ALERT_EVERY_MINUTES.
+LAB_ENABLED = True
+LAB_TIMEFRAMES = ["5m", "15m", "1h", "4h", "1d"]
+LAB_STRATEGIES = ["ema_rsi", "macd", "rsi_reversion", "bollinger", "confluence"]
+LAB_ALERT_EVERY_MINUTES = 30
+LAB_KEEP_DAYS = 30
+
 # ---------- Logs (the app downloads these as a .zip) ----------
 LOG_DIR = "logs"
 SNAPSHOT_EVERY_MINUTES = 60  # how often market_snapshot.csv (every pair x timeframe) is rewritten
