@@ -171,6 +171,10 @@
   .fbar i { position:absolute; top:3px; height:12px; border-radius:3px; }
   .fbar i.p { left:50%; background:rgba(34,197,94,.75); } .fbar i.m { right:50%; background:rgba(239,68,68,.75); }
   .fbar::before { content:""; position:absolute; left:50%; top:0; bottom:0; width:1px; background:var(--line); }
+  .modes { display:flex; gap:6px; margin:0 16px 10px; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:4px; }
+  .mode { flex:1; padding:9px 6px; border-radius:9px; border:0; background:transparent; color:var(--mute); font-size:13px; font-weight:700; }
+  .mode.on { background:var(--accent); color:#fff; }
+  .labnote { margin:0 16px 10px; font-size:12px; color:var(--mute); }
   [hidden] { display:none !important; }
 </style>
 </head>
@@ -192,6 +196,11 @@
   <div class="mwhen" id="m-when"></div>
   <div class="sessions" id="m-sessions"></div>
 </div>
+<div class="modes" id="modes">
+  <button class="mode" data-mode="main">Main signals</button>
+  <button class="mode" data-mode="lab">&#x1F9EA; Lab (all timeframes)</button>
+</div>
+<div class="labnote" id="labnote" hidden>Lab = every pair &times; timeframe &times; strategy, paper-traded automatically. Paper only: nothing goes to a broker.</div>
 <div class="paper" id="paper" hidden>
   <div class="ptop"><span>Paper account</span><span id="p-since"></span></div>
   <div class="pequity"><b id="p-equity">$0.00</b><span id="p-ret"></span><small>equity, live</small></div>
@@ -258,6 +267,7 @@
   </div>
   <div class="tabs" style="padding:12px 0 4px">
     <button class="tab on" id="perf-live">Your trades</button>
+    <button class="tab" id="perf-lab">&#x1F9EA; Lab</button>
     <button class="tab" id="perf-hist">10-year test</button>
   </div>
   <div class="help" id="perf-note"></div>
@@ -315,7 +325,7 @@
 (function () {
   var TFS = ["All", "5m", "15m", "1h", "4h", "1d"];
   var STATUSES = [["all", "Any result"], ["open", "Open"], ["won", "Won"], ["lost", "Lost"]];
-  var state = { tf: "All", st: "all", q: "", data: null, loading: false, group: null };
+  var state = { tf: "All", st: "all", q: "", data: null, loading: false, group: null, mode: "main", lastLoad: 0 };
   var $ = function (id) { return document.getElementById(id); };
   var NAMES = { XAUUSD: "gold", XAGUSD: "silver" };
 
@@ -548,9 +558,13 @@
     var risk = Math.abs(s.entry - s.sl) || 1e-9;
     return (s.pips || 0) * pip(s.pair) / risk;
   }
+  function signalSentAt(s) {          // a signal is sent when its candle closes, not when the candle starts
+    var len = { "5m": 300, "15m": 900, "1h": 3600, "4h": 14400, "1d": 86400 }[s.tf] || 0;
+    return new Date(new Date(s.bar_time).getTime() + len * 1000).toISOString();
+  }
   function paperTrades() {
     var since = paperSince(), all = (state.data && state.data.signals) || [];
-    return since ? all.filter(function (s) { return s.bar_time >= since; }) : all.slice();
+    return since ? all.filter(function (s) { return signalSentAt(s) >= since; }) : all.slice();
   }
   function usd2(v) {
     var a = Math.abs(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -562,9 +576,15 @@
     var box = $("paper");
     if (!state.data) { box.hidden = true; return; }
     box.hidden = false;
-    var start = paperStartBalance(), trades = paperTrades();
+    var start = paperStartBalance(), labMode = state.mode === "lab" && state.data.totals;
+    var trades = labMode ? (state.data.signals || []).filter(function (x) { return x.status === "open"; }) : paperTrades();
     var riskUsd = start * paperRiskPct() / 100;                      // the same dollar risk on every trade
     var realized = 0, gains = 0, losses = 0, floating = 0, won = 0, lost = 0, open = 0, missing = 0;
+    if (labMode) {                                                   // whole lab history, from the bot's totals
+      var T = state.data.totals;
+      realized = (T.total_r || 0) * riskUsd; gains = (T.won_r || 0) * riskUsd; losses = (T.lost_r || 0) * riskUsd;
+      won = T.won || 0; lost = T.lost || 0;
+    }
     trades.forEach(function (s) {
       var st = s.status || "open";
       if (st === "open") {
@@ -592,7 +612,8 @@
     set("p-loss", losses, true);
     $("p-count").textContent = won + " won · " + lost + " lost · " + open + " open";
     var since = paperSince();
-    $("p-since").textContent = (since ? "since " + when(since) : "all signals") + " · risk " + paperRiskPct() + "% (" + usd2(riskUsd) + ") per trade";
+    $("p-since").textContent = (labMode ? "lab since " + when(state.data.started) : (since ? "since " + when(since) : "all signals")) +
+      " · risk " + paperRiskPct() + "% (" + usd2(riskUsd) + ") per trade";
     $("p-note").textContent = missing ? "Waiting for live prices for " + missing + " trade" + (missing > 1 ? "s" : "") + "…" : "";
   }
 
@@ -629,7 +650,7 @@
     var p = closed.reduce(function (a, s) { return a + (s.pips || 0); }, 0);
     var open = rows.length - closed.length;
     box.innerHTML =
-      "<div><b>" + (closed.length ? Math.round(100 * won / closed.length) + "%" : "–") + "</b><span>Win rate (" + won + "/" + closed.length + ")</span></div>" +
+      "<div><b>" + (closed.length ? Math.round(100 * won / closed.length) + "%" : "–") + "</b><span>Win rate (" + won + "/" + closed.length + ")" + (state.mode === "lab" ? " latest" : "") + "</span></div>" +
       '<div><b class="' + (r >= 0 ? "pos" : "neg") + '">' + (closed.length ? sgn(r, 1) + "R" : "–") + "</b><span>Total R</span></div>" +
       '<div><b class="' + (p >= 0 ? "pos" : "neg") + '">' + (closed.length ? sgn(p, 0) : "–") + "</b><span>Total pips</span></div>" +
       "<div><b>" + open + "</b><span>Open now</span></div>" +
@@ -665,7 +686,10 @@
         "Quiet periods are normal.</div>";
       return;
     }
-    var groups = GROUPS.map(function (g) { return { key: g[0], name: g[1], items: rows.filter(g[2]) }; })
+    var groups = GROUPS.map(function (g) {
+      var nm = state.mode === "lab" && g[0] !== "open" ? g[1] + " \u2013 latest" : g[1];
+      return { key: g[0], name: nm, items: rows.filter(g[2]) };
+    })
                        .filter(function (g) { return g.items.length; });
     list.innerHTML = groups.map(function (g) {
       var open = state.group === g.key;
@@ -674,7 +698,9 @@
         '<span class="gbar"></span><span class="gname">' + g.name + '</span><span class="gcount">' + g.items.length + "</span>" +
         '<span class="gsum" id="gsum-' + g.key + '">' + groupSummary(g.key, g.items) + "</span>" +
         '<span class="garrow">\u25B6</span></button>' +
-        (open ? '<div class="gbody">' + g.items.map(cardHtml).join("") + "</div>" : "") + "</div>";
+        (open ? '<div class="gbody">' + g.items.slice(0, 150).map(cardHtml).join("") +
+          (g.items.length > 150 ? '<div class="help" style="padding:4px 4px 12px">Showing 150 of ' + g.items.length +
+            ". Use the timeframe chips, Won / Lost or search to narrow it down.</div>" : "") + "</div>" : "") + "</div>";
     }).join("");
     // live prices: always for open trades (group total), and for the cards you can see
     var vis = rows.filter(function (x) { return outcome(x) === "open"; });
@@ -730,13 +756,18 @@
     var c = cfg();
     if (!c.user || !c.repo || state.loading) { render(); return; }
     state.loading = true; $("refresh").classList.add("spin"); render();
+    var mode = state.mode, file = mode === "lab" ? "logs/lab/lab_state.json" : "signals.json";
     var url = "https://api.github.com/repos/" + encodeURIComponent(c.user) + "/" + encodeURIComponent(c.repo) +
-              "/contents/signals.json";
+              "/contents/" + file;
     request("github", url, c.token).then(function (r) {
       state.loading = false; $("refresh").classList.remove("spin");
+      if (mode !== state.mode) { refresh(); return; }               // switched while loading
+      state.lastLoad = Date.now();
       if (r.status === 200) {
-        try { state.data = JSON.parse(r.body); save("cache", r.body); showErr(""); }
-        catch (e) { showErr("signals.json could not be read."); }
+        try { state.data = JSON.parse(r.body); save(mode === "lab" ? "cache_lab" : "cache", r.body); showErr(""); }
+        catch (e) { showErr(file + " could not be read."); }
+      } else if (r.status === 404 && mode === "lab") {
+        showErr("The lab hasn't started yet. It starts with the first scan after you update the bot files.");
       } else if (r.status === 404) {
         showErr("signals.json not found. Check the username and repository name. If the repository is private, " +
                 "add a token. The bot creates this file with its first signal.");
@@ -1167,6 +1198,12 @@
           if (t.type !== "blob") return;
           if (t.path.indexOf("logs/") === 0 || ["signals.json", "sent_signals.json", "backtest_report.md", "backtest_report.json"].indexOf(t.path) >= 0) paths.push(t.path);
         });
+        var labDays = paths.filter(function (p) { return p.indexOf("logs/lab/trades/") === 0; }).sort();
+        if (labDays.length > 7) {                                   // keep the zip small: last 7 days of lab trades
+          var drop = labDays.slice(0, labDays.length - 7);
+          paths = paths.filter(function (p) { return drop.indexOf(p) < 0; });
+          note.push("Lab trade files: only the last 7 days are included (" + drop.length + " older days are in the repository).");
+        }
       } catch (e) {
         note.push("Couldn't list the repository files (" + e.message + "), so only the main log files were included.");
         var today = new Date().toISOString().slice(0, 10);
@@ -1254,9 +1291,16 @@
   function renderPerf() {
     $("perf-live").classList.toggle("on", perfTab === "live");
     $("perf-hist").classList.toggle("on", perfTab === "hist");
+    $("perf-lab").classList.toggle("on", perfTab === "lab");
     var body = $("perf-body"), note = $("perf-note"), data = perfCache[perfTab];
     if (!data) { body.innerHTML = '<div class="empty">Loading&hellip;</div>'; note.textContent = ""; return; }
     if (data.error) { body.innerHTML = '<div class="empty">' + esc(data.error) + "</div>"; note.textContent = ""; return; }
+    if (perfTab === "lab") {
+      note.textContent = "Lab, " + (data.window || "last 30 days") + ": " + data.closed_trades + " closed paper trades, total " +
+        sgn(data.total_r, 1) + "R (before spread). Faded rows have fewer than 30 trades.";
+      body.innerHTML = data.factors.map(function (f) { return factorHtml(f, 30); }).join("");
+      return;
+    }
     if (perfTab === "live") {
       note.textContent = data.closed_trades + " closed trades, total " + sgn(data.total_r, 1) + "R. " +
         "Avg R is the average result per trade (1R = the amount risked; a stop loss is \u22121R). Faded rows have fewer than 5 trades, " +
@@ -1271,19 +1315,20 @@
   function loadPerf() {
     var c = cfg();
     if (!c.user || !c.repo) { perfCache[perfTab] = { error: "Connect your bot in Settings first." }; renderPerf(); return; }
-    var tab = perfTab, path = tab === "live" ? "logs/performance.json" : "backtest_report.json";
+    var tab = perfTab, path = tab === "live" ? "logs/performance.json" : tab === "lab" ? "logs/lab/lab_performance.json" : "backtest_report.json";
     renderPerf();
     request("github", repoApiUrl(path), c.token).then(function (r) {
       var res;
       if (r.status === 200) {
         try {
           var j = JSON.parse(r.body);
-          res = tab === "live" ? j : j.factors;
+          res = tab === "hist" ? j.factors : j;
           if (!res) res = { error: "The strategy test hasn't made this breakdown yet. It appears after the next strategy-report run." };
         } catch (e) { res = { error: "Couldn't read the file." }; }
       } else if (r.status === 404) {
         res = { error: tab === "live" ? "No performance log yet. It appears after the next bot scan." :
-                                        "No strategy report yet. Run strategy-report in GitHub Actions." };
+                       tab === "lab" ? "No lab results yet. They appear once lab trades start closing." :
+                                       "No strategy report yet. Run strategy-report in GitHub Actions." };
       } else {
         res = { error: "Couldn't load (HTTP " + r.status + "). Try again in a minute." };
       }
@@ -1297,6 +1342,7 @@
   $("perf-back").onclick = function () { $("perf").hidden = true; };
   $("perf-live").onclick = function () { perfTab = "live"; if (perfCache.live) renderPerf(); else loadPerf(); };
   $("perf-hist").onclick = function () { perfTab = "hist"; if (perfCache.hist) renderPerf(); else loadPerf(); };
+  $("perf-lab").onclick = function () { perfTab = "lab"; if (perfCache.lab) renderPerf(); else loadPerf(); };
   $("logsbtn").onclick = function () { $("logs").hidden = false; };
   $("logs-back").onclick = function () { $("logs").hidden = true; };
   $("logs-zip").onclick = downloadAllLogs;
@@ -1345,9 +1391,26 @@
     renderMarket();
     if (!cur && $("logs").hidden && $("settings").hidden && $("perf").hidden) fetchPrices();
   }, 30000);
-  setInterval(function () { if (!document.hidden && !cur) refresh(); }, 3 * 60 * 1000);
+  setInterval(function () {
+    if (document.hidden || cur) return;
+    var every = state.mode === "lab" ? 10 * 60 * 1000 : 3 * 60 * 1000;    // the lab file is bigger: refresh less often
+    if (Date.now() - state.lastLoad >= every - 5000) refresh();
+  }, 60 * 1000);
+  function setMode(m) {
+    state.mode = m === "lab" ? "lab" : "main"; save("mode", state.mode);
+    var btns = document.querySelectorAll(".mode");
+    for (var i = 0; i < btns.length; i++) btns[i].classList.toggle("on", btns[i].getAttribute("data-mode") === state.mode);
+    $("labnote").hidden = state.mode !== "lab";
+    state.group = null; state.data = null; showErr("");
+    try { var c0 = load(state.mode === "lab" ? "cache_lab" : "cache", ""); if (c0) state.data = JSON.parse(c0); } catch (e) {}
+    render();
+  }
+  $("modes").onclick = function (e) {
+    var m = e.target.closest(".mode"); if (!m || m.getAttribute("data-mode") === state.mode) return;
+    setMode(m.getAttribute("data-mode")); refresh();
+  };
 
-  try { var cached = load("cache", ""); if (cached) state.data = JSON.parse(cached); } catch (e) {}
+  setMode(load("mode", "main"));
   renderMarket(); renderChips(); render(); refresh();
 })();
 </script>
