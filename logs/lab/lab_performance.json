@@ -1,63 +1,245 @@
 {
- "closed_trades": 0,
- "last_closed_utc": "",
- "total_r": 0,
+ "closed_trades": 2,
+ "last_closed_utc": "2026-11-16T17:55:00+00:00",
+ "total_r": 1.0,
  "factors": [
   {
    "name": "Setup (timeframe + strategy)",
-   "rows": []
+   "rows": [
+    {
+     "value": "5m macd",
+     "trades": 1,
+     "wins": 1,
+     "win_rate": 100.0,
+     "total_r": 2.0,
+     "avg_r": 2.0
+    },
+    {
+     "value": "5m bollinger",
+     "trades": 1,
+     "wins": 0,
+     "win_rate": 0.0,
+     "total_r": -1.0,
+     "avg_r": -1.0
+    }
+   ]
   },
   {
    "name": "Timeframe",
-   "rows": []
+   "rows": [
+    {
+     "value": "5m",
+     "trades": 2,
+     "wins": 1,
+     "win_rate": 50.0,
+     "total_r": 1.0,
+     "avg_r": 0.5
+    }
+   ]
   },
   {
    "name": "Strategy",
-   "rows": []
+   "rows": [
+    {
+     "value": "macd",
+     "trades": 1,
+     "wins": 1,
+     "win_rate": 100.0,
+     "total_r": 2.0,
+     "avg_r": 2.0
+    },
+    {
+     "value": "bollinger",
+     "trades": 1,
+     "wins": 0,
+     "win_rate": 0.0,
+     "total_r": -1.0,
+     "avg_r": -1.0
+    }
+   ]
   },
   {
    "name": "Buy or sell",
-   "rows": []
+   "rows": [
+    {
+     "value": "SELL",
+     "trades": 1,
+     "wins": 1,
+     "win_rate": 100.0,
+     "total_r": 2.0,
+     "avg_r": 2.0
+    },
+    {
+     "value": "BUY",
+     "trades": 1,
+     "wins": 0,
+     "win_rate": 0.0,
+     "total_r": -1.0,
+     "avg_r": -1.0
+    }
+   ]
   },
   {
    "name": "Pair type",
-   "rows": []
+   "rows": [
+    {
+     "value": "cross",
+     "trades": 2,
+     "wins": 1,
+     "win_rate": 50.0,
+     "total_r": 1.0,
+     "avg_r": 0.5
+    }
+   ]
   },
   {
    "name": "Pair",
-   "rows": []
+   "rows": [
+    {
+     "value": "NZDJPY",
+     "trades": 2,
+     "wins": 1,
+     "win_rate": 50.0,
+     "total_r": 1.0,
+     "avg_r": 0.5
+    }
+   ]
   },
   {
    "name": "Candle pattern",
-   "rows": []
+   "rows": [
+    {
+     "value": "bearish candle",
+     "trades": 1,
+     "wins": 1,
+     "win_rate": 100.0,
+     "total_r": 2.0,
+     "avg_r": 2.0
+    },
+    {
+     "value": "doji",
+     "trades": 1,
+     "wins": 0,
+     "win_rate": 0.0,
+     "total_r": -1.0,
+     "avg_r": -1.0
+    }
+   ]
   },
   {
    "name": "Candle vs trade",
-   "rows": []
+   "rows": [
+    {
+     "value": "confirms",
+     "trades": 1,
+     "wins": 1,
+     "win_rate": 100.0,
+     "total_r": 2.0,
+     "avg_r": 2.0
+    },
+    {
+     "value": "neutral",
+     "trades": 1,
+     "wins": 0,
+     "win_rate": 0.0,
+     "total_r": -1.0,
+     "avg_r": -1.0
+    }
+   ]
   },
   {
    "name": "Market direction",
-   "rows": []
+   "rows": [
+    {
+     "value": "with both trends",
+     "trades": 1,
+     "wins": 1,
+     "win_rate": 100.0,
+     "total_r": 2.0,
+     "avg_r": 2.0
+    },
+    {
+     "value": "against both trends",
+     "trades": 1,
+     "wins": 0,
+     "win_rate": 0.0,
+     "total_r": -1.0,
+     "avg_r": -1.0
+    }
+   ]
   },
   {
    "name": "RSI zone",
-   "rows": []
+   "rows": [
+    {
+     "value": "neutral (45-55)",
+     "trades": 1,
+     "wins": 1,
+     "win_rate": 100.0,
+     "total_r": 2.0,
+     "avg_r": 2.0
+    },
+    {
+     "value": "weak (30-45)",
+     "trades": 1,
+     "wins": 0,
+     "win_rate": 0.0,
+     "total_r": -1.0,
+     "avg_r": -1.0
+    }
+   ]
   },
   {
    "name": "Volatility",
-   "rows": []
+   "rows": [
+    {
+     "value": "normal",
+     "trades": 2,
+     "wins": 1,
+     "win_rate": 50.0,
+     "total_r": 1.0,
+     "avg_r": 0.5
+    }
+   ]
   },
   {
    "name": "Weekday",
-   "rows": []
+   "rows": [
+    {
+     "value": "Monday",
+     "trades": 2,
+     "wins": 1,
+     "win_rate": 50.0,
+     "total_r": 1.0,
+     "avg_r": 0.5
+    }
+   ]
   },
   {
    "name": "Session",
-   "rows": []
+   "rows": [
+    {
+     "value": "New York",
+     "trades": 2,
+     "wins": 1,
+     "win_rate": 50.0,
+     "total_r": 1.0,
+     "avg_r": 0.5
+    }
+   ]
   },
   {
    "name": "High-impact news in next 24h",
-   "rows": []
+   "rows": [
+    {
+     "value": "not recorded",
+     "trades": 2,
+     "wins": 1,
+     "win_rate": 50.0,
+     "total_r": 1.0,
+     "avg_r": 0.5
+    }
+   ]
   }
  ],
  "window": "last 30 days"
