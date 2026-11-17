@@ -17,7 +17,9 @@
   .hbtns { display:flex; flex:none; gap:8px; }
   .icon { background:var(--card); border:1px solid var(--line); color:var(--text); width:40px; height:40px;
           border-radius:12px; font-size:18px; }
-  .icon.spin { animation:spin 1s linear infinite; }
+  .icon .ri { display:inline-block; line-height:1; }
+  .icon.spin .ri { animation:spin 1s linear infinite; }     /* only the arrow turns, not the button */
+  @media (prefers-reduced-motion: reduce) { .icon.spin .ri { animation-duration:2.5s; } }
   @keyframes spin { to { transform:rotate(360deg); } }
   .chips { display:flex; gap:8px; padding:4px 16px 8px; overflow-x:auto; }
   .chip { flex:none; padding:7px 14px; border-radius:999px; border:1px solid var(--line);
@@ -187,7 +189,7 @@
   <div class="hbtns">
     <button class="icon" id="perfbtn" aria-label="What wins and loses">&#x1F4CA;</button>
     <button class="icon" id="logsbtn" aria-label="Download logs">&#x2B07;</button>
-    <button class="icon" id="refresh" aria-label="Refresh">&#x27F3;</button>
+    <button class="icon" id="refresh" aria-label="Refresh"><span class="ri">&#x27F3;</span></button>
     <button class="icon" id="gear" aria-label="Settings">&#x2699;</button>
   </div>
 </header>
@@ -203,6 +205,7 @@
 <div class="labnote" id="labnote" hidden>Lab = every pair &times; timeframe &times; strategy, paper-traded automatically. Paper only: nothing goes to a broker.</div>
 <div class="paper" id="paper" hidden>
   <div class="ptop"><span>Paper account</span><span id="p-since"></span></div>
+  <div class="pnote" style="margin:2px 0 0">After a typical broker spread (1.2 pips majors, 2.5 crosses, 3 gold / silver).</div>
   <div class="pequity"><b id="p-equity">$0.00</b><span id="p-ret"></span><small>equity, live</small></div>
   <div class="pgrid">
     <div><span>Balance (closed)</span><b id="p-bal"></b></div>
@@ -566,6 +569,16 @@
   function paperStartBalance() { var v = parseFloat(load("paper_bal", "1000")); return isFinite(v) && v > 0 ? v : 1000; }
   function paperSince() { return load("paper_start", ""); }          // "" = all signals
   function paperRiskPct() { var v = parseFloat(load("paper_risk", "1")); return isFinite(v) && v > 0 ? v : 1; }
+  var SPREAD = { majors: 1.2, crosses: 2.5, metals: 3.0 };
+  var MAJORS = ["EURUSD", "GBPUSD", "USDJPY", "USDCHF", "AUDUSD", "USDCAD", "NZDUSD"];
+  function spreadPips(pair) {                                        // typical broker spread, paid once per trade
+    if (pair === "XAUUSD" || pair === "XAGUSD") return SPREAD.metals;
+    return MAJORS.indexOf(pair) >= 0 ? SPREAD.majors : SPREAD.crosses;
+  }
+  function spreadR(s) {
+    var stop = Math.abs(s.entry - s.sl) / pip(s.pair) || 1e-9;
+    return spreadPips(s.pair) / stop;
+  }
   function paperSizing() { return load("paper_sizing", "risk") === "lot" ? "lot" : "risk"; }
   function paperLot() { var v = parseFloat(load("paper_lot", "0.01")); return isFinite(v) && v > 0 ? v : 0.01; }
   function rNow(s, price) {                                          // live result in R (1R = the amount risked)
@@ -601,7 +614,7 @@
     var byLot = paperSizing() === "lot", plot = paperLot();
     var realized = 0, gains = 0, losses = 0, floating = 0, won = 0, lost = 0, open = 0, missing = 0;
     if (labMode) {                                                   // whole lab history, from the bot's totals
-      var T = state.data.totals;
+      var T = state.data.totals.net || state.data.totals;
       if (byLot) {
         realized = (T.usd_1lot || 0) * plot; gains = (T.won_usd_1lot || 0) * plot; losses = (T.lost_usd_1lot || 0) * plot;
       } else {
@@ -616,15 +629,15 @@
         var q = prices[s.pair];
         if (!q) { missing++; return; }
         if (byLot) {
-          var fd = dollars(s, (s.side === "BUY" ? 1 : -1) * (q.price - s.entry) / pip(s.pair), plot);
+          var fd = dollars(s, (s.side === "BUY" ? 1 : -1) * (q.price - s.entry) / pip(s.pair) - spreadPips(s.pair), plot);
           if (fd == null) { missing++; return; }
           floating += fd;
         } else {
-          floating += rNow(s, q.price) * riskUsd;
+          floating += (rNow(s, q.price) - spreadR(s)) * riskUsd;
         }
         return;
       }
-      var v = byLot ? dollars(s, s.pips || 0, plot) : rClosed(s) * riskUsd;
+      var v = byLot ? dollars(s, (s.pips || 0) - spreadPips(s.pair), plot) : (rClosed(s) - spreadR(s)) * riskUsd;
       if (v == null) { missing++; return; }
       realized += v;
       if (v >= 0) { gains += v; won++; } else { losses += v; lost++; }
@@ -1352,7 +1365,7 @@
     if (data.error) { body.innerHTML = '<div class="empty">' + esc(data.error) + "</div>"; note.textContent = ""; return; }
     if (perfTab === "lab") {
       note.textContent = "Lab, " + (data.window || "last 30 days") + ": " + data.closed_trades + " closed paper trades, total " +
-        sgn(data.total_r, 1) + "R (before spread). Faded rows have fewer than 30 trades.";
+        sgn(data.total_r, 1) + "R " + (data.after_spread ? "after spread" : "before spread") + ". Faded rows have fewer than 30 trades.";
       body.innerHTML = data.factors.map(function (f) { return factorHtml(f, 30); }).join("");
       return;
     }
