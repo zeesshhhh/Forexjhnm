@@ -179,17 +179,34 @@ def factor_report():
                     "direction": features.direction_label(C[i] > e200[i], C[i] > e800[i], side),
                     "rsi_zone": features.rsi_zone(float(r14[i])), "volatility": features.vol_label(float(ratio[i])),
                     "weekday": df.index[i].day_name(), "year": str(df.index[i].year),
+                    "time": df.index[i].isoformat(),
                 })
+
+    # older half vs newer half of all trades (same number of trades in each): an idea only counts
+    # if it works in BOTH halves, otherwise it is probably luck
+    times = sorted(t["time"] for t in rows)
+    split = times[len(times) // 2] if times else ""
 
     def table(values_and_rs):
         groups = {}
-        for v, r in values_and_rs:
-            groups.setdefault(str(v), []).append(r)
+        for item in values_and_rs:
+            v, r = item[0], item[1]
+            newer = item[2] if len(item) > 2 else None
+            g = groups.setdefault(str(v), {"all": [], "old": [], "new": []})
+            g["all"].append(r)
+            if newer is not None:
+                g["new" if newer else "old"].append(r)
         out = []
-        for v, rs in groups.items():
+        for v, g in groups.items():
+            rs = g["all"]
             wins = sum(1 for r in rs if r > 0)
-            out.append({"value": v, "trades": len(rs), "wins": wins, "win_rate": round(100 * wins / len(rs), 1),
-                        "total_r": round(float(sum(rs)), 1), "avg_r": round(float(sum(rs)) / len(rs), 3)})
+            row = {"value": v, "trades": len(rs), "wins": wins, "win_rate": round(100 * wins / len(rs), 1),
+                   "total_r": round(float(sum(rs)), 1), "avg_r": round(float(sum(rs)) / len(rs), 3)}
+            for k in ("old", "new"):
+                if g[k]:
+                    row[f"{k}_trades"] = len(g[k])
+                    row[f"{k}_avg_r"] = round(float(sum(g[k])) / len(g[k]), 3)
+            out.append(row)
         return sorted(out, key=lambda r: (-r["avg_r"], -r["trades"]))
 
     factors = [{"name": "Timeframe (same setup, all pairs)",
@@ -198,8 +215,38 @@ def factor_report():
                        ("Market direction", "direction"), ("RSI zone", "rsi_zone"), ("Volatility", "volatility"),
                        ("Buy or sell", "side"), ("Pair type", "pair_type"), ("Weekday", "weekday"),
                        ("Year", "year"), ("Pair", "pair")]:
-        factors.append({"name": label, "rows": table((t[key], t["r"]) for t in rows)})
+        factors.append({"name": label, "rows": table((t[key], t["r"], t["time"] >= split) for t in rows)})
+
+    # every daily strategy (with and without the trend filter), older vs newer half and by year
+    by_variant = []
+    for vname, vfn in VARIANTS.items():
+        rs = []
+        for tf in detail_tfs:
+            for pair in config.SYMBOLS:
+                df = candles(pair, tf)
+                if df is None or len(df) < 600:
+                    continue
+                for (i, _r, r_net, _s) in trades(df, vfn(df), pair):
+                    rs.append((vname, r_net, df.index[i].isoformat() >= split, str(df.index[i].year)))
+        if not rs:
+            continue
+        row = table((v, r, newer) for v, r, newer, _y in rs)[0]
+        years = {}
+        for _v, r, _n, y in rs:
+            years.setdefault(y, []).append(r)
+        row["years_positive"] = sum(1 for y in years.values() if sum(y) > 0)
+        row["years"] = len(years)
+        by_variant.append(row)
+    by_variant.sort(key=lambda r: -r["avg_r"])
+
+    # ideas that held up in both halves (at least 40 trades in each)
+    robust = []
+    for fct in factors[1:]:
+        for r in fct["rows"]:
+            if r.get("old_trades", 0) >= 40 and r.get("new_trades", 0) >= 40 and r["old_avg_r"] > 0 and r["new_avg_r"] > 0:
+                robust.append({"factor": fct["name"], **r})
     return {"setup": name + (" + trend filter" if use_trend else ""), "timeframes": detail_tfs,
+            "split": split, "daily_strategies": by_variant, "robust_ideas": robust,
             "trades": len(rows), "total_r": round(float(sum(t["r"] for t in rows)), 1),
             "note": "All available history, after spread. Rows with fewer than 30 trades are mostly luck.",
             "factors": factors}
@@ -313,10 +360,22 @@ def main():
     if fac:
         lines += ["", f"# What wins and what loses: {fac['setup']} ({', '.join(fac['timeframes'])})", "",
                   f"{fac['trades']} past trades, total {fac['total_r']:+.1f}R after spread. {fac['note']}", ""]
+        lines += [f"Older half = trades before {fac['split'][:10]}, newer half = from then on.", "",
+                  "## Every daily strategy", "", "| Strategy | Trades | Win % | Avg R | Older half | Newer half | Years positive |",
+                  "|---|---|---|---|---|---|---|"]
+        for r in fac["daily_strategies"]:
+            lines.append(f"| {r['value']} | {r['trades']} | {r['win_rate']} | {r['avg_r']:+.3f} | "
+                         f"{r.get('old_avg_r', 0):+.3f} | {r.get('new_avg_r', 0):+.3f} | {r['years_positive']}/{r['years']} |")
+        lines += ["", "## Ideas that held up in both halves (40+ trades each)", ""]
+        lines += [f"- {r['factor']}: {r['value']} (older {r['old_avg_r']:+.3f}R, newer {r['new_avg_r']:+.3f}R)"
+                  for r in fac["robust_ideas"]] or ["- none"]
+        lines.append("")
         for fct in fac["factors"]:
-            lines += [f"## {fct['name']}", "", "| Value | Trades | Win % | Avg R | Total R |", "|---|---|---|---|---|"]
+            lines += [f"## {fct['name']}", "", "| Value | Trades | Win % | Avg R | Older half | Newer half | Total R |",
+                      "|---|---|---|---|---|---|---|"]
             for r in fct["rows"]:
-                lines.append(f"| {r['value']} | {r['trades']} | {r['win_rate']} | {r['avg_r']:+.3f} | {r['total_r']:+.1f} |")
+                lines.append(f"| {r['value']} | {r['trades']} | {r['win_rate']} | {r['avg_r']:+.3f} | "
+                             f"{r.get('old_avg_r', float('nan')):+.3f} | {r.get('new_avg_r', float('nan')):+.3f} | {r['total_r']:+.1f} |")
             lines.append("")
     with open("backtest_report.md", "w") as f:
         f.write("\n".join(lines))
