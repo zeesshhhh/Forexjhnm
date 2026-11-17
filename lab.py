@@ -28,10 +28,33 @@ LEN = {"5m": "5min", "15m": "15min", "1h": "1h", "4h": "4h", "1d": "1D"}
 MAX_OPEN_BARS = {"5m": 288, "15m": 192, "1h": 168, "4h": 120, "1d": 60}
 RECENT_CLOSED = 200
 
-CSV_COLS = ["id", "pair", "tf", "side", "strategy", "signal_candle_utc", "entry", "sl", "tp", "stop_pips",
-            "status", "closed_at_utc", "exit", "pips", "result_r",
-            "pattern", "pattern_vs_trade", "trend", "bigger_trend", "direction_vs_trade", "rsi_zone",
-            "volatility", "weekday", "session", "news_next_24h", "news_prev_24h", "news_titles"]
+FEATURE_COLS = ["pattern", "pattern_vs_trade", "trend", "bigger_trend", "direction_vs_trade", "rsi_zone",
+                "volatility", "weekday", "session", "news_next_24h", "news_prev_24h", "news_titles"]
+CSV_COLS = (["id", "pair", "tf", "side", "strategy", "signal_candle_utc", "entry", "sl", "tp", "stop_pips",
+             "status", "closed_at_utc", "exit", "pips", "result_r", "spread_pips", "pips_net", "r_net"] + FEATURE_COLS)
+MAJORS = {"EURUSD", "GBPUSD", "USDJPY", "USDCHF", "AUDUSD", "USDCAD", "NZDUSD"}
+
+
+def spread_pips(pair):
+    """Typical broker spread in pips (change in config.SPREAD_PIPS). Paid once per trade."""
+    sp = getattr(config, "SPREAD_PIPS", {})
+    if pair in sp:
+        return float(sp[pair])
+    if pair in ("XAUUSD", "XAGUSD"):
+        return float(sp.get("metals", 3.0))
+    return float(sp.get("majors", 1.2) if pair in MAJORS else sp.get("crosses", 2.5))
+
+
+def add_net(t):
+    """Result after spread: pips minus the spread, and R minus spread / stop distance."""
+    if t.get("r_net") is not None or t.get("result_r") is None:
+        return t
+    sp = spread_pips(t["pair"])
+    stop = abs(float(t["entry"]) - float(t["sl"])) / pip_size(t["pair"]) or 1e-9
+    t["spread_pips"] = sp
+    t["pips_net"] = round(float(t["pips"]) - sp, 1)
+    t["r_net"] = round(float(t["result_r"]) - sp / stop, 3)
+    return t
 
 
 def pip_size(pair):
@@ -116,6 +139,7 @@ def _close(t, status, price, when):
     t.update({"status": status, "exit": round(float(price), 6), "closed_at": pd.Timestamp(when).isoformat(),
               "pips": round(side * (price - t["entry"]) / pip_size(t["pair"]), 1),
               "result_r": round(side * (price - t["entry"]) / risk, 2)})
+    add_net(t)
 
 
 def _check_open(t, df):
@@ -136,6 +160,26 @@ def _check_open(t, df):
     return False
 
 
+def _migrate_csv(path):
+    """Rewrites a day file made before the spread columns existed."""
+    if not os.path.exists(path):
+        return
+    with open(path, newline="") as f:
+        r = csv.DictReader(f)
+        if r.fieldnames == CSV_COLS:
+            return
+        rows = list(r)
+    with open(path, "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=CSV_COLS, extrasaction="ignore")
+        w.writeheader()
+        for row in rows:
+            try:
+                add_net(row)
+            except Exception:
+                pass
+            w.writerow({k: row.get(k, "") for k in CSV_COLS})
+
+
 def _append_csv(trades):
     os.makedirs(TRADES_DIR, exist_ok=True)
     by_day = {}
@@ -143,6 +187,7 @@ def _append_csv(trades):
         by_day.setdefault(t["closed_at"][:10], []).append(t)
     for day, ts in by_day.items():
         path = os.path.join(TRADES_DIR, f"{day}.csv")
+        _migrate_csv(path)
         new = not os.path.exists(path)
         with open(path, "a", newline="") as f:
             w = csv.DictWriter(f, fieldnames=CSV_COLS, extrasaction="ignore")
@@ -173,11 +218,11 @@ def write_performance():
             with open(os.path.join(TRADES_DIR, name), newline="") as f:
                 for r in csv.DictReader(f):
                     try:
-                        rr = float(r["result_r"])
+                        rr = float(r["r_net"]) if r.get("r_net") not in (None, "") else float(add_net(dict(r))["r_net"])
                     except Exception:
                         continue
                     n = r.get("news_next_24h")
-                    feats = {k: r.get(k) for k in CSV_COLS[15:] if r.get(k) not in (None, "")}
+                    feats = {k: r.get(k) for k in FEATURE_COLS if r.get(k) not in (None, "")}
                     if n not in (None, "", "not set up"):
                         try:
                             feats["news_next_24h"] = int(n)
@@ -198,6 +243,7 @@ def write_performance():
     srows.sort(key=lambda r: (-r["avg_r"], -r["trades"]))
     perf["factors"].insert(0, {"name": "Setup (timeframe + strategy)", "rows": srows})
     perf["window"] = f"last {getattr(config, 'LAB_KEEP_DAYS', 30)} days"
+    perf["after_spread"] = True
     os.makedirs(LAB_DIR, exist_ok=True)
     with open(PERF, "w") as f:
         json.dump(perf, f, indent=1)
@@ -223,14 +269,48 @@ def _digest(st, notify, force=False):
             lines.append(f"  ...and {len(new) - 6} more")
     if closed:
         won = sum(1 for c in closed if c["r"] > 0)
-        lines.append(f"Closed: {len(closed)} ({won} won, {len(closed) - won} lost), {sum(c['r'] for c in closed):+.1f}R")
-    t = st["totals"]
-    lines.append(f"Lab since start: {t['closed']} closed, {t['won']} won, {t['total_r']:+.1f}R")
+        lines.append(f"Closed: {len(closed)} ({won} won, {len(closed) - won} lost), "
+                     f"{sum(c['r'] for c in closed):+.1f}R after spread")
+    t = st["totals"].get("net") or st["totals"]
+    lines.append(f"Lab since start: {t['closed']} closed, {t['won']} won, {t['total_r']:+.1f}R after spread")
     if notify:
         notify(f"\U0001F9EA Lab: {len(new)} new, {len(closed)} closed", "\n".join(lines),
                priority="low", tags="test_tube")
     st["pending"] = {"new": [], "closed": []}
     st["last_digest"] = _now().isoformat()
+
+
+def _empty_net():
+    return {"closed": 0, "won": 0, "lost": 0, "total_r": 0.0, "won_r": 0.0, "lost_r": 0.0,
+            "usd_1lot": 0.0, "won_usd_1lot": 0.0, "lost_usd_1lot": 0.0}
+
+
+def _backfill_net(st, rates):
+    """Once: after-spread totals for trades closed before this update (from the day files)."""
+    n = _empty_net()
+    if os.path.isdir(TRADES_DIR):
+        for name in sorted(os.listdir(TRADES_DIR)):
+            if not name.endswith(".csv"):
+                continue
+            path = os.path.join(TRADES_DIR, name)
+            _migrate_csv(path)
+            with open(path, newline="") as f:
+                for r in csv.DictReader(f):
+                    try:
+                        rn, pn = float(r["r_net"]), float(r["pips_net"])
+                    except Exception:
+                        continue
+                    n["closed"] += 1
+                    n["won" if rn > 0 else "lost"] += 1
+                    n["total_r"] += rn
+                    n["won_r" if rn > 0 else "lost_r"] += rn
+                    v = usd_per_pip_1lot(r["pair"], rates)
+                    if v is not None:
+                        n["usd_1lot"] += pn * v
+                        n["won_usd_1lot" if rn > 0 else "lost_usd_1lot"] += pn * v
+    st["totals"]["net"] = {k: (round(v, 3) if isinstance(v, float) else v) for k, v in n.items()}
+    for t in st["recent_closed"]:
+        add_net(t)
 
 
 def run(dfs, events=None, notify=None, dry=False):
@@ -244,6 +324,8 @@ def run(dfs, events=None, notify=None, dry=False):
 
     # 1) results for open lab trades
     rates = rates_from(dfs)
+    if "net" not in st["totals"]:
+        _backfill_net(st, rates)
     still, closed_now = [], []
     for t in st["open"]:
         df = dfs.get((t["pair"], t["tf"]))
@@ -266,7 +348,18 @@ def run(dfs, events=None, notify=None, dry=False):
             tot["usd_1lot"] = round(tot["usd_1lot"] + t["usd_1lot"], 2)
             k2 = "won_usd_1lot" if t["result_r"] > 0 else "lost_usd_1lot"
             tot[k2] = round(tot[k2] + t["usd_1lot"], 2)
-        st["pending"]["closed"].append({"r": t["result_r"]})
+        n = tot["net"]
+        n["closed"] += 1
+        n["won" if t["r_net"] > 0 else "lost"] += 1
+        n["total_r"] = round(n["total_r"] + t["r_net"], 3)
+        kn = "won_r" if t["r_net"] > 0 else "lost_r"
+        n[kn] = round(n[kn] + t["r_net"], 3)
+        if v is not None:
+            u = round(t["pips_net"] * v, 2)
+            n["usd_1lot"] = round(n["usd_1lot"] + u, 2)
+            ku = "won_usd_1lot" if t["r_net"] > 0 else "lost_usd_1lot"
+            n[ku] = round(n[ku] + u, 2)
+        st["pending"]["closed"].append({"r": t["r_net"]})
     st["recent_closed"] = (sorted(closed_now, key=lambda t: t["closed_at"], reverse=True) + st["recent_closed"])[:RECENT_CLOSED]
 
     # 2) new lab trades: one open trade at a time per pair x timeframe x strategy
