@@ -71,6 +71,10 @@ LAB_STRATEGIES = ["ema_rsi", "macd", "rsi_reversion", "bollinger", "confluence"]
 LAB_ALERT_EVERY_MINUTES = 30
 LAB_KEEP_DAYS = 30
 
+# Typical broker spread in pips, subtracted from every paper result (lab and app).
+# Add a pair to override, e.g. "EURUSD": 0.8
+SPREAD_PIPS = {"majors": 1.2, "crosses": 2.5, "metals": 3.0}
+
 # ---------- Logs (the app downloads these as a .zip) ----------
 LOG_DIR = "logs"
 SNAPSHOT_EVERY_MINUTES = 60  # how often market_snapshot.csv (every pair x timeframe) is rewritten
