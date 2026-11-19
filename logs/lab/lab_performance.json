@@ -1,7 +1,7 @@
 {
- "closed_trades": 2931,
- "last_closed_utc": "2026-11-19T11:15:00+00:00",
- "total_r": -686.37,
+ "closed_trades": 2933,
+ "last_closed_utc": "2026-11-19T11:25:00+00:00",
+ "total_r": -683.0,
  "factors": [
   {
    "name": "Setup (timeframe + strategy)",
@@ -56,11 +56,11 @@
     },
     {
      "value": "5m rsi_reversion",
-     "trades": 367,
-     "wins": 130,
-     "win_rate": 35.4,
-     "total_r": -80.55,
-     "avg_r": -0.219
+     "trades": 368,
+     "wins": 131,
+     "win_rate": 35.6,
+     "total_r": -78.86,
+     "avg_r": -0.214
     },
     {
      "value": "5m bollinger",
@@ -79,20 +79,20 @@
      "avg_r": -0.247
     },
     {
+     "value": "5m confluence",
+     "trades": 341,
+     "wins": 115,
+     "win_rate": 33.7,
+     "total_r": -93.66,
+     "avg_r": -0.275
+    },
+    {
      "value": "15m confluence",
      "trades": 118,
      "wins": 35,
      "win_rate": 29.7,
      "total_r": -32.58,
      "avg_r": -0.276
-    },
-    {
-     "value": "5m confluence",
-     "trades": 340,
-     "wins": 114,
-     "win_rate": 33.5,
-     "total_r": -95.34,
-     "avg_r": -0.28
     },
     {
      "value": "1h bollinger",
@@ -213,11 +213,11 @@
     },
     {
      "value": "5m",
-     "trades": 2010,
-     "wins": 696,
-     "win_rate": 34.6,
-     "total_r": -512.3,
-     "avg_r": -0.255
+     "trades": 2012,
+     "wins": 698,
+     "win_rate": 34.7,
+     "total_r": -508.93,
+     "avg_r": -0.253
     },
     {
      "value": "1d",
@@ -258,19 +258,19 @@
     },
     {
      "value": "confluence",
-     "trades": 490,
-     "wins": 159,
-     "win_rate": 32.4,
-     "total_r": -132.77,
-     "avg_r": -0.271
+     "trades": 491,
+     "wins": 160,
+     "win_rate": 32.6,
+     "total_r": -131.08,
+     "avg_r": -0.267
     },
     {
      "value": "rsi_reversion",
-     "trades": 526,
-     "wins": 167,
-     "win_rate": 31.7,
-     "total_r": -149.17,
-     "avg_r": -0.284
+     "trades": 527,
+     "wins": 168,
+     "win_rate": 31.9,
+     "total_r": -147.48,
+     "avg_r": -0.28
     },
     {
      "value": "ema_rsi",
@@ -287,11 +287,11 @@
    "rows": [
     {
      "value": "SELL",
-     "trades": 1380,
-     "wins": 520,
-     "win_rate": 37.7,
-     "total_r": -185.94,
-     "avg_r": -0.135
+     "trades": 1382,
+     "wins": 522,
+     "win_rate": 37.8,
+     "total_r": -182.56,
+     "avg_r": -0.132
     },
     {
      "value": "BUY",
@@ -316,11 +316,11 @@
     },
     {
      "value": "major",
-     "trades": 870,
-     "wins": 323,
-     "win_rate": 37.1,
-     "total_r": -144.99,
-     "avg_r": -0.167
+     "trades": 872,
+     "wins": 325,
+     "win_rate": 37.3,
+     "total_r": -141.61,
+     "avg_r": -0.162
     },
     {
      "value": "cross",
@@ -408,20 +408,20 @@
      "avg_r": -0.089
     },
     {
+     "value": "EURUSD",
+     "trades": 153,
+     "wins": 61,
+     "win_rate": 39.9,
+     "total_r": -18.8,
+     "avg_r": -0.123
+    },
+    {
      "value": "AUDJPY",
      "trades": 130,
      "wins": 47,
      "win_rate": 36.2,
      "total_r": -16.8,
      "avg_r": -0.129
-    },
-    {
-     "value": "EURUSD",
-     "trades": 151,
-     "wins": 59,
-     "win_rate": 39.1,
-     "total_r": -22.18,
-     "avg_r": -0.147
     },
     {
      "value": "AUDUSD",
@@ -613,20 +613,20 @@
      "avg_r": -0.22
     },
     {
+     "value": "bearish engulfing",
+     "trades": 187,
+     "wins": 66,
+     "win_rate": 35.3,
+     "total_r": -43.48,
+     "avg_r": -0.233
+    },
+    {
      "value": "bearish marubozu",
      "trades": 150,
      "wins": 59,
      "win_rate": 39.3,
      "total_r": -34.95,
      "avg_r": -0.233
-    },
-    {
-     "value": "bearish engulfing",
-     "trades": 185,
-     "wins": 64,
-     "win_rate": 34.6,
-     "total_r": -46.86,
-     "avg_r": -0.253
     },
     {
      "value": "bullish candle",
@@ -683,11 +683,11 @@
     },
     {
      "value": "confirms",
-     "trades": 1988,
-     "wins": 672,
-     "win_rate": 33.8,
-     "total_r": -473.8,
-     "avg_r": -0.238
+     "trades": 1990,
+     "wins": 674,
+     "win_rate": 33.9,
+     "total_r": -470.43,
+     "avg_r": -0.236
     },
     {
      "value": "neutral",
@@ -712,11 +712,11 @@
     },
     {
      "value": "against both trends",
-     "trades": 1281,
-     "wins": 399,
-     "win_rate": 31.1,
-     "total_r": -390.81,
-     "avg_r": -0.305
+     "trades": 1283,
+     "wins": 401,
+     "win_rate": 31.3,
+     "total_r": -387.44,
+     "avg_r": -0.302
     },
     {
      "value": "mixed",
@@ -749,11 +749,11 @@
     },
     {
      "value": "strong (55-70)",
-     "trades": 850,
-     "wins": 289,
-     "win_rate": 34.0,
-     "total_r": -193.12,
-     "avg_r": -0.227
+     "trades": 852,
+     "wins": 291,
+     "win_rate": 34.2,
+     "total_r": -189.75,
+     "avg_r": -0.223
     },
     {
      "value": "weak (30-45)",
@@ -778,11 +778,11 @@
    "rows": [
     {
      "value": "high",
-     "trades": 462,
-     "wins": 175,
-     "win_rate": 37.9,
-     "total_r": -33.63,
-     "avg_r": -0.073
+     "trades": 464,
+     "wins": 177,
+     "win_rate": 38.1,
+     "total_r": -30.25,
+     "avg_r": -0.065
     },
     {
      "value": "normal",
@@ -831,11 +831,11 @@
     },
     {
      "value": "Thursday",
-     "trades": 493,
-     "wins": 139,
-     "win_rate": 28.2,
-     "total_r": -190.75,
-     "avg_r": -0.387
+     "trades": 495,
+     "wins": 141,
+     "win_rate": 28.5,
+     "total_r": -187.37,
+     "avg_r": -0.379
     }
    ]
   },
@@ -868,11 +868,11 @@
     },
     {
      "value": "London",
-     "trades": 666,
-     "wins": 178,
-     "win_rate": 26.7,
-     "total_r": -297.15,
-     "avg_r": -0.446
+     "trades": 668,
+     "wins": 180,
+     "win_rate": 26.9,
+     "total_r": -293.77,
+     "avg_r": -0.44
     },
     {
      "value": "late / Sydney",
@@ -897,11 +897,11 @@
    "rows": [
     {
      "value": "not recorded",
-     "trades": 2931,
-     "wins": 992,
-     "win_rate": 33.8,
-     "total_r": -686.37,
-     "avg_r": -0.234
+     "trades": 2933,
+     "wins": 994,
+     "win_rate": 33.9,
+     "total_r": -683.0,
+     "avg_r": -0.233
     }
    ]
   }
