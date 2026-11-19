@@ -1,6 +1,56 @@
 {
- "updated": "2026-11-16T02:10:35.280012+00:00",
+ "updated": "2026-11-19T00:05:55.171601+00:00",
  "signals": [
+  {
+   "id": "AUDJPY|1d|2026-11-18T00:00:00+00:00",
+   "pair": "AUDJPY",
+   "tf": "1d",
+   "side": "BUY",
+   "strategy": "bollinger",
+   "entry": 107.496002,
+   "sl": 105.914741,
+   "tp": 110.658524,
+   "rsi": 32.3,
+   "decimals": 3,
+   "bar_time": "2026-11-18T00:00:00+00:00",
+   "stats": {
+    "trades": 39,
+    "win_rate": 30.8,
+    "profit_factor": 0.89
+   },
+   "indicators": {
+    "candle_time": "2026-11-18T00:00:00+00:00",
+    "close": 107.496002,
+    "rsi14": 32.34,
+    "ema9": 108.608615,
+    "ema21": 109.394987,
+    "ema200": 110.083251,
+    "trend": "down",
+    "macd": -0.710321,
+    "macd_signal": -0.4482005,
+    "macd_hist": -0.2621205,
+    "atr14": 1.0541739,
+    "atr_pips": 105.4,
+    "bb_upper": 112.178341,
+    "bb_mid": 109.76755,
+    "bb_lower": 107.356758
+   },
+   "features": {
+    "pattern": "hammer",
+    "pattern_vs_trade": "confirms",
+    "trend": "down",
+    "bigger_trend": "up",
+    "direction_vs_trade": "mixed",
+    "rsi_zone": "weak (30-45)",
+    "volatility": "normal",
+    "weekday": "Wednesday",
+    "session": "daily candle",
+    "news_next_24h": "not set up",
+    "news_prev_24h": "not set up",
+    "news_titles": ""
+   },
+   "status": "open"
+  },
   {
    "id": "EURJPY|1h|2026-11-13T16:00:00+00:00",
    "pair": "EURJPY",
