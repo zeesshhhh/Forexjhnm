@@ -1,23 +1,24 @@
 factor,value,trades,wins,win_rate,total_r,avg_r
 Timeframe,5m,4,4,100.0,6.25,1.562
-Timeframe,4h,5,2,40.0,1.0,0.2
+Timeframe,4h,6,3,50.0,3.0,0.5
 Timeframe,15m,12,3,25.0,-3.0,-0.25
 Timeframe,1h,11,2,18.2,-5.0,-0.455
+Strategy,rsi_reversion,4,2,50.0,2.0,0.5
 Strategy,macd,5,2,40.0,1.0,0.2
 Strategy,ema_rsi,11,4,36.4,1.0,0.091
 Strategy,bollinger,9,3,33.3,0.0,0.0
-Strategy,rsi_reversion,3,1,33.3,0.0,0.0
 Strategy,confluence,4,1,25.0,-2.75,-0.688
-Buy or sell,SELL,16,7,43.8,3.25,0.203
+Buy or sell,SELL,17,8,47.1,5.25,0.309
 Buy or sell,BUY,16,4,25.0,-4.0,-0.25
 Pair type,gold / silver,4,3,75.0,5.0,1.25
+Pair type,major,5,2,40.0,1.0,0.2
 Pair type,cross,24,7,29.2,-4.75,-0.198
-Pair type,major,4,1,25.0,-1.0,-0.25
 Pair,XAUUSD,1,1,100.0,2.0,2.0
 Pair,EURCHF,1,1,100.0,2.0,2.0
 Pair,XAGUSD,3,2,66.7,3.0,1.0
 Pair,GBPJPY,4,2,50.0,2.0,0.5
 Pair,USDCHF,2,1,50.0,1.0,0.5
+Pair,USDJPY,2,1,50.0,1.0,0.5
 Pair,AUDCHF,1,1,100.0,0.25,0.25
 Pair,EURGBP,3,1,33.3,0.0,0.0
 Pair,EURNZD,3,1,33.3,0.0,0.0
@@ -28,14 +29,13 @@ Pair,CADJPY,1,0,0.0,-1.0,-1.0
 Pair,EURCAD,1,0,0.0,-1.0,-1.0
 Pair,EURAUD,1,0,0.0,-1.0,-1.0
 Pair,GBPUSD,1,0,0.0,-1.0,-1.0
-Pair,USDJPY,1,0,0.0,-1.0,-1.0
 Pair,CHFJPY,1,0,0.0,-1.0,-1.0
 Pair,AUDNZD,1,0,0.0,-1.0,-1.0
-Candle pattern,not recorded,32,11,34.4,-0.75,-0.023
-Candle vs trade,not recorded,32,11,34.4,-0.75,-0.023
-Market direction,not recorded,32,11,34.4,-0.75,-0.023
-RSI zone,not recorded,32,11,34.4,-0.75,-0.023
-Volatility,not recorded,32,11,34.4,-0.75,-0.023
-Weekday,not recorded,32,11,34.4,-0.75,-0.023
-Session,not recorded,32,11,34.4,-0.75,-0.023
-High-impact news in next 24h,not recorded,32,11,34.4,-0.75,-0.023
+Candle pattern,not recorded,33,12,36.4,1.25,0.038
+Candle vs trade,not recorded,33,12,36.4,1.25,0.038
+Market direction,not recorded,33,12,36.4,1.25,0.038
+RSI zone,not recorded,33,12,36.4,1.25,0.038
+Volatility,not recorded,33,12,36.4,1.25,0.038
+Weekday,not recorded,33,12,36.4,1.25,0.038
+Session,not recorded,33,12,36.4,1.25,0.038
+High-impact news in next 24h,not recorded,33,12,36.4,1.25,0.038
