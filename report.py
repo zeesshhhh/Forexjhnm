@@ -307,6 +307,72 @@ def verify_candle_filter():
     return {"rows": out, "gaps": gaps}
 
 
+def broker_daily(h):
+    """Daily candles built from 1h candles, closing at 5 PM New York like a forex broker's.
+    (Yahoo's own daily candles open at a different time than they close.)"""
+    ny = h.index.tz_convert("America/New_York")
+    day = (ny + pd.Timedelta(hours=7)).normalize()          # 17:00 New York -> start of the next trading day
+    g = h.groupby(day.tz_localize(None))
+    d = pd.DataFrame({"Open": g["Open"].first(), "High": g["High"].max(), "Low": g["Low"].min(),
+                      "Close": g["Close"].last(), "n": g["Close"].size()})
+    d = d[(d["n"] >= 12) & (d.index.dayofweek < 5)].drop(columns="n")   # full trading days only
+    d.index = pd.DatetimeIndex(d.index).tz_localize("UTC")
+    return d.iloc[:-1]                                        # last day may still be forming
+
+
+def clean_daily_check():
+    """Same 2 years, same strategies: Yahoo daily candles vs broker-style daily candles.
+    If the candle-filter edge only shows up on Yahoo's candles, it is a data quirk."""
+    import features
+    res, gap = [], {}
+    pairs_data = {}
+    for pair in config.SYMBOLS:
+        h = candles(pair, "1h")
+        y = candles(pair, "1d")
+        if h is None or y is None or len(h) < 2000:
+            continue
+        b = broker_daily(h)
+        y = y[y.index >= b.index[0] - pd.Timedelta(days=1)]
+        if len(b) < 300 or len(y) < 300:
+            continue
+        pairs_data[pair] = {"yahoo": y, "broker": b}
+    for src in ("yahoo", "broker"):
+        gs = []
+        for d in pairs_data.values():
+            df = d[src]
+            a = atr(df).values
+            g = np.abs(df["Open"].values[1:] - df["Close"].values[:-1]) / np.where(a[1:] > 0, a[1:], np.nan)
+            gs.append(g[np.isfinite(g)])
+        allg = np.concatenate(gs) if gs else np.array([])
+        gap[src] = {"share_gap_over_0.1_atr": round(float((allg > 0.1).mean()) * 100, 1) if len(allg) else None,
+                    "median_gap_atr": round(float(np.median(allg)), 3) if len(allg) else None}
+    for vname, vfn in VARIANTS.items():
+        row = {"strategy": vname}
+        for src in ("yahoo", "broker"):
+            b = {"all": [], "against": [], "close_against": []}
+            for pair, d in pairs_data.items():
+                df = d[src]
+                sv = vfn(df).values
+                O, H, L, C = df["Open"].values, df["High"].values, df["Low"].values, df["Close"].values
+                for (i, _r, r_net, _s) in trades(df, vfn(df), pair):
+                    side = 1 if sv[i] > 0 else -1
+                    pat = features.pattern_from(O[i], H[i], L[i], C[i], O[i - 1], H[i - 1], L[i - 1], C[i - 1])
+                    b["all"].append(r_net)
+                    if features.pattern_vs_trade(pat, "BUY" if side > 0 else "SELL") == "against":
+                        b["against"].append(r_net)
+                    if side * (C[i] - C[i - 1]) < 0:
+                        b["close_against"].append(r_net)
+            row[src] = {k: {"trades": len(v), "avg_r": round(float(np.mean(v)), 3) if v else None,
+                            "win_rate": round(100 * float(np.mean([r > 0 for r in v])), 1) if v else None}
+                        for k, v in b.items()}
+        res.append(row)
+    span = [min(d["broker"].index[0] for d in pairs_data.values()).isoformat()[:10],
+            max(d["broker"].index[-1] for d in pairs_data.values()).isoformat()[:10]] if pairs_data else None
+    return {"pairs": len(pairs_data), "span": span, "gaps": gap, "rows": res,
+            "note": "Both sources cover the same dates. Indicators warm up on the first 210 days, so the trend "
+                    "filter (EMA 800) is weak here."}
+
+
 def stats(rs):
     rs = list(rs)
     if not rs:
@@ -392,8 +458,13 @@ def main():
     except Exception as e:
         print(f"[verify error] {e}")
         ver = None
+    try:
+        clean = clean_daily_check()
+    except Exception as e:
+        print(f"[clean daily error] {e}")
+        clean = None
     report = {"generated": pd.Timestamp.now(tz="UTC").isoformat(), "seconds": round(time.time() - t0),
-              "factors": fac, "verify_candle_filter": ver,
+              "factors": fac, "verify_candle_filter": ver, "clean_daily_check": clean,
               "settings": {"sl_atr": SL_ATR, "tp_atr": TP_ATR, "train_share": TRAIN_SHARE,
                            "min_trades": MIN_TRADES, "min_pf": MIN_PF},
               "summary": summary, "rows": rows}
@@ -449,6 +520,17 @@ def main():
                          f"{cell('against_no_gap')} |")
         lines += ["", "Gaps between the previous close and the open: " +
                   "; ".join(f"{k}: {v['share_gap_over_0.1_atr']}% of bars over 0.1 ATR" for k, v in ver["gaps"].items())]
+    if clean:
+        lines += ["", "# Yahoo daily candles vs broker-style daily candles (same dates)", "",
+                  f"{clean['pairs']} pairs, {clean['span'][0]} to {clean['span'][1]}. Gaps (open far from previous close): "
+                  f"Yahoo {clean['gaps']['yahoo']['share_gap_over_0.1_atr']}% of days, broker-style "
+                  f"{clean['gaps']['broker']['share_gap_over_0.1_atr']}%.", "",
+                  "| Strategy | Yahoo all | Yahoo against | Broker all | Broker against | Broker close-against |",
+                  "|---|---|---|---|---|---|"]
+        for r in clean["rows"]:
+            c = lambda x: f"{x['avg_r']:+.3f} ({x['trades']})" if x["trades"] else "-"
+            lines.append(f"| {r['strategy']} | {c(r['yahoo']['all'])} | {c(r['yahoo']['against'])} | "
+                         f"{c(r['broker']['all'])} | {c(r['broker']['against'])} | {c(r['broker']['close_against'])} |")
     with open("backtest_report.md", "w") as f:
         f.write("\n".join(lines))
     print(f"done in {report['seconds']}s")
