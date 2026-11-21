@@ -226,17 +226,26 @@ def factor_report():
                 df = candles(pair, tf)
                 if df is None or len(df) < 600:
                     continue
-                for (i, _r, r_net, _s) in trades(df, vfn(df), pair):
-                    rs.append((vname, r_net, df.index[i].isoformat() >= split, str(df.index[i].year)))
+                sv = vfn(df)
+                O, H, L, C = df["Open"].values, df["High"].values, df["Low"].values, df["Close"].values
+                for (i, _r, r_net, _s) in trades(df, sv, pair):
+                    side = "BUY" if sv.values[i] > 0 else "SELL"
+                    pat = features.pattern_from(O[i], H[i], L[i], C[i], O[i - 1], H[i - 1], L[i - 1], C[i - 1])
+                    rs.append((vname, r_net, df.index[i].isoformat() >= split, str(df.index[i].year),
+                               features.pattern_vs_trade(pat, side)))
         if not rs:
             continue
-        row = table((v, r, newer) for v, r, newer, _y in rs)[0]
-        years = {}
-        for _v, r, _n, y in rs:
-            years.setdefault(y, []).append(r)
-        row["years_positive"] = sum(1 for y in years.values() if sum(y) > 0)
-        row["years"] = len(years)
-        by_variant.append(row)
+        for label, keep in (("", None), (" | candle against", "against")):
+            sub = [x for x in rs if keep is None or x[4] == keep]
+            if not sub:
+                continue
+            row = table((v + label, r, newer) for v, r, newer, _y, _c in sub)[0]
+            years = {}
+            for _v, r, _n, y, _c in sub:
+                years.setdefault(y, []).append(r)
+            row["years_positive"] = sum(1 for y in years.values() if sum(y) > 0)
+            row["years"] = len(years)
+            by_variant.append(row)
     by_variant.sort(key=lambda r: -r["avg_r"])
 
     # ideas that held up in both halves (at least 40 trades in each)
