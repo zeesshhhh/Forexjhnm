@@ -261,6 +261,52 @@ def factor_report():
             "factors": factors}
 
 
+def verify_candle_filter():
+    """Is the 'candle against the trade' edge real, or a quirk of Yahoo's open prices?
+    Same trades, four ways of picking them, on every timeframe:
+      all            every trade of the strategy
+      against        signal candle goes against the trade (red candle on a BUY, green on a SELL)
+      close_against  the day CLOSED against the trade vs the previous close (does not use the open price)
+      against_no_gap 'against', but only where the open is within 0.1 ATR of the previous close
+    """
+    import features
+    out, gaps = [], {}
+    for tf in PERIODS:
+        for vname, vfn in VARIANTS.items():
+            buckets = {"all": [], "against": [], "close_against": [], "against_no_gap": []}
+            for pair in config.SYMBOLS:
+                df = candles(pair, tf)
+                if df is None or len(df) < 600:
+                    continue
+                sv = vfn(df).values
+                O, H, L, C = df["Open"].values, df["High"].values, df["Low"].values, df["Close"].values
+                a = atr(df).values
+                if vname == "bollinger" and tf not in gaps:
+                    g = np.abs(O[1:] - C[:-1]) / np.where(a[1:] > 0, a[1:], np.nan)
+                    gaps[tf] = {"bars": int(np.isfinite(g).sum()),
+                                "share_gap_over_0.1_atr": round(float(np.nanmean(g > 0.1)) * 100, 1),
+                                "median_gap_atr": round(float(np.nanmedian(g)), 3)}
+                for (i, _r, r_net, _s) in trades(df, vfn(df), pair):
+                    side = 1 if sv[i] > 0 else -1
+                    pat = features.pattern_from(O[i], H[i], L[i], C[i], O[i - 1], H[i - 1], L[i - 1], C[i - 1])
+                    against = features.pattern_vs_trade(pat, "BUY" if side > 0 else "SELL") == "against"
+                    close_against = side * (C[i] - C[i - 1]) < 0
+                    small_gap = a[i] > 0 and abs(O[i] - C[i - 1]) <= 0.1 * a[i]
+                    buckets["all"].append(r_net)
+                    if against:
+                        buckets["against"].append(r_net)
+                        if small_gap:
+                            buckets["against_no_gap"].append(r_net)
+                    if close_against:
+                        buckets["close_against"].append(r_net)
+            row = {"tf": tf, "strategy": vname}
+            for k, rs in buckets.items():
+                row[k] = {"trades": len(rs), "avg_r": round(float(np.mean(rs)), 3) if rs else None,
+                          "win_rate": round(100 * float(np.mean([r > 0 for r in rs])), 1) if rs else None}
+            out.append(row)
+    return {"rows": out, "gaps": gaps}
+
+
 def stats(rs):
     rs = list(rs)
     if not rs:
@@ -341,8 +387,13 @@ def main():
     except Exception as e:
         print(f"[factor report error] {e}")
         fac = None
+    try:
+        ver = verify_candle_filter()
+    except Exception as e:
+        print(f"[verify error] {e}")
+        ver = None
     report = {"generated": pd.Timestamp.now(tz="UTC").isoformat(), "seconds": round(time.time() - t0),
-              "factors": fac,
+              "factors": fac, "verify_candle_filter": ver,
               "settings": {"sl_atr": SL_ATR, "tp_atr": TP_ATR, "train_share": TRAIN_SHARE,
                            "min_trades": MIN_TRADES, "min_pf": MIN_PF},
               "summary": summary, "rows": rows}
@@ -386,6 +437,18 @@ def main():
                 lines.append(f"| {r['value']} | {r['trades']} | {r['win_rate']} | {r['avg_r']:+.3f} | "
                              f"{r.get('old_avg_r', float('nan')):+.3f} | {r.get('new_avg_r', float('nan')):+.3f} | {r['total_r']:+.1f} |")
             lines.append("")
+    if ver:
+        lines += ["", "# Is the candle filter real?", "",
+                  "Avg R after spread. against = candle against the trade; close_against = closed against the trade vs "
+                  "the previous close (no open price used); against_no_gap = against, only where the open is next to "
+                  "the previous close.", "", "| TF | Strategy | All | Against | Close against | Against, no gap |",
+                  "|---|---|---|---|---|---|"]
+        for r in ver["rows"]:
+            cell = lambda k: (f"{r[k]['avg_r']:+.3f} ({r[k]['trades']})" if r[k]["trades"] else "-")
+            lines.append(f"| {r['tf']} | {r['strategy']} | {cell('all')} | {cell('against')} | {cell('close_against')} | "
+                         f"{cell('against_no_gap')} |")
+        lines += ["", "Gaps between the previous close and the open: " +
+                  "; ".join(f"{k}: {v['share_gap_over_0.1_atr']}% of bars over 0.1 ATR" for k, v in ver["gaps"].items())]
     with open("backtest_report.md", "w") as f:
         f.write("\n".join(lines))
     print(f"done in {report['seconds']}s")
