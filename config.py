@@ -51,6 +51,11 @@ UNSEEN_MIN_PROFIT_FACTOR = 1.0
 # Only trade in the direction of the bigger trend (EMA 800 is about EMA 200 one timeframe up)
 TREND_FILTER = True
 
+# Only take a main signal when the signal candle goes AGAINST the trade (e.g. a bearish candle on a BUY):
+# +0.33R and +0.37R per trade in both halves of 10 years (156 trades), and better on live lab data too.
+# None = no candle filter. Options: "against", "neutral", "confirms".
+CANDLE_FILTER = "against"
+
 # Skip a new signal if an open trade already bets on the same currency in the same direction
 # (e.g. SELL USDJPY is open, so SELL GBPJPY is skipped: both are "buy yen").
 ONE_TRADE_PER_CURRENCY = True
