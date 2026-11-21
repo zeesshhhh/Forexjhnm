@@ -217,6 +217,11 @@ def analyze(pair, tf, df, scan_time):
     except Exception as e:
         print(f"[features error] {pair} {tf}: {e}")
         facts = {}
+    want = getattr(config, "CANDLE_FILTER", None)              # e.g. "against": the signal candle goes against the trade
+    if want and facts.get("pattern_vs_trade") != want:
+        snap["signal"] = ""
+        snap["note"] = f"skipped by candle filter (candle {facts.get('pattern_vs_trade', '?')}, need {want})"
+        return None, snap
     return {
         "pair": pair, "tf": tf, "side": "BUY" if side > 0 else "SELL", "strategy": name,
         "entry": price,
