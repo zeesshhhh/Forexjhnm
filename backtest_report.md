@@ -1,6 +1,6 @@
 # Strategy report
 
-Generated 2026-11-21T22:19 UTC. Strategies were picked on the older 70% of each chart and tested on the newer 30% they had never seen. **After spread** subtracts a typical broker spread from every trade. R = what you risked per trade (a loss is -1R, a win is +2R).
+Generated 2026-11-21T22:24 UTC. Strategies were picked on the older 70% of each chart and tested on the newer 30% they had never seen. **After spread** subtracts a typical broker spread from every trade. R = what you risked per trade (a loss is -1R, a win is +2R).
 
 ## 5m
 
@@ -258,3 +258,63 @@ Older half = trades before 2022-05-15, newer half = from then on.
 | EURAUD | 39 | 23.1 | -0.321 | -0.382 | -0.264 | -12.5 |
 | USDCHF | 35 | 22.9 | -0.327 | -0.345 | -0.307 | -11.4 |
 | AUDNZD | 31 | 19.4 | -0.446 | -0.454 | -0.428 | -13.8 |
+
+
+# Is the candle filter real?
+
+Avg R after spread. against = candle against the trade; close_against = closed against the trade vs the previous close (no open price used); against_no_gap = against, only where the open is next to the previous close.
+
+| TF | Strategy | All | Against | Close against | Against, no gap |
+|---|---|---|---|---|---|
+| 5m | ema_rsi | -0.386 (7546) | -0.256 (1042) | -0.294 (1103) | -0.239 (703) |
+| 5m | ema_rsi+trend | -0.374 (6545) | -0.227 (891) | -0.303 (911) | -0.222 (616) |
+| 5m | macd | -0.309 (5594) | -0.096 (750) | -0.251 (763) | -0.110 (518) |
+| 5m | macd+trend | -0.312 (4636) | -0.084 (622) | -0.272 (623) | -0.116 (435) |
+| 5m | rsi_reversion | -0.302 (8892) | -0.189 (515) | - | -0.038 (267) |
+| 5m | rsi_reversion+trend | -0.298 (2594) | -0.015 (190) | - | +0.021 (109) |
+| 5m | bollinger | -0.273 (13788) | -0.192 (2026) | -0.286 (1662) | -0.185 (1246) |
+| 5m | bollinger+trend | -0.250 (5821) | -0.063 (867) | -0.250 (689) | -0.067 (566) |
+| 5m | confluence | -0.309 (7549) | -0.171 (654) | -0.435 (447) | -0.065 (409) |
+| 5m | confluence+trend | -0.311 (3727) | -0.045 (443) | -0.362 (377) | +0.086 (313) |
+| 15m | ema_rsi | -0.274 (2792) | -0.144 (359) | -0.215 (447) | -0.186 (273) |
+| 15m | ema_rsi+trend | -0.243 (2421) | -0.082 (306) | -0.199 (385) | -0.115 (232) |
+| 15m | macd | -0.232 (2040) | -0.059 (254) | -0.101 (307) | -0.056 (205) |
+| 15m | macd+trend | -0.207 (1715) | -0.001 (202) | -0.082 (245) | -0.029 (162) |
+| 15m | rsi_reversion | -0.229 (3183) | -0.181 (123) | - | -0.141 (90) |
+| 15m | rsi_reversion+trend | -0.129 (889) | -0.294 (51) | - | -0.360 (37) |
+| 15m | bollinger | -0.185 (4884) | -0.066 (511) | -0.169 (547) | -0.062 (376) |
+| 15m | bollinger+trend | -0.068 (1972) | +0.003 (215) | -0.013 (214) | -0.023 (169) |
+| 15m | confluence | -0.215 (2679) | -0.059 (200) | -0.248 (181) | -0.129 (160) |
+| 15m | confluence+trend | -0.180 (1324) | +0.019 (149) | -0.246 (164) | -0.067 (118) |
+| 1h | ema_rsi | -0.129 (8735) | -0.184 (1045) | -0.182 (1374) | -0.175 (880) |
+| 1h | ema_rsi+trend | -0.133 (7417) | -0.165 (854) | -0.178 (1116) | -0.156 (714) |
+| 1h | macd | -0.135 (6270) | -0.146 (703) | -0.133 (949) | -0.133 (583) |
+| 1h | macd+trend | -0.133 (5144) | -0.117 (590) | -0.165 (796) | -0.111 (494) |
+| 1h | rsi_reversion | -0.148 (11399) | -0.132 (425) | - | -0.068 (336) |
+| 1h | rsi_reversion+trend | -0.144 (3050) | -0.134 (112) | - | -0.034 (87) |
+| 1h | bollinger | -0.109 (17320) | -0.093 (2099) | -0.125 (2527) | -0.105 (1827) |
+| 1h | bollinger+trend | -0.115 (7062) | -0.102 (764) | -0.102 (935) | -0.132 (659) |
+| 1h | confluence | -0.147 (8720) | -0.109 (595) | -0.120 (554) | -0.098 (507) |
+| 1h | confluence+trend | -0.144 (3950) | -0.070 (352) | -0.077 (426) | -0.010 (299) |
+| 4h | ema_rsi | -0.058 (2259) | +0.010 (241) | +0.084 (382) | +0.001 (226) |
+| 4h | ema_rsi+trend | -0.058 (1948) | -0.023 (205) | +0.061 (322) | -0.037 (193) |
+| 4h | macd | -0.107 (1587) | +0.085 (180) | -0.088 (253) | +0.083 (167) |
+| 4h | macd+trend | -0.120 (1318) | +0.091 (150) | -0.090 (213) | +0.087 (140) |
+| 4h | rsi_reversion | -0.034 (3150) | -0.050 (132) | - | -0.123 (110) |
+| 4h | rsi_reversion+trend | -0.010 (841) | -0.023 (35) | - | +0.011 (31) |
+| 4h | bollinger | -0.047 (4688) | -0.004 (669) | -0.013 (844) | +0.008 (624) |
+| 4h | bollinger+trend | -0.036 (1792) | +0.128 (196) | +0.037 (290) | +0.136 (187) |
+| 4h | confluence | -0.047 (2315) | +0.015 (160) | +0.208 (162) | -0.027 (140) |
+| 4h | confluence+trend | -0.051 (1005) | +0.052 (92) | +0.124 (117) | +0.036 (85) |
+| 1d | ema_rsi | -0.003 (1311) | +0.281 (194) | +0.056 (204) | -0.490 (17) |
+| 1d | ema_rsi+trend | -0.007 (1117) | +0.265 (166) | +0.118 (177) | -0.557 (13) |
+| 1d | macd | -0.025 (938) | +0.615 (145) | +0.029 (166) | +0.660 (25) |
+| 1d | macd+trend | -0.020 (795) | +0.621 (128) | +0.096 (148) | +0.716 (19) |
+| 1d | rsi_reversion | +0.012 (1515) | +0.484 (222) | - | +0.485 (10) |
+| 1d | rsi_reversion+trend | -0.003 (358) | +0.608 (48) | - | +1.982 (2) |
+| 1d | bollinger | +0.003 (2505) | +0.352 (392) | -0.037 (400) | +0.325 (78) |
+| 1d | bollinger+trend | -0.021 (987) | +0.347 (156) | -0.063 (157) | +0.354 (48) |
+| 1d | confluence | +0.061 (1227) | +0.580 (186) | +0.105 (80) | +0.486 (14) |
+| 1d | confluence+trend | +0.058 (560) | +0.393 (85) | +0.300 (66) | +0.650 (9) |
+
+Gaps between the previous close and the open: 5m: 47.3% of bars over 0.1 ATR; 15m: 48.4% of bars over 0.1 ATR; 1h: 45.4% of bars over 0.1 ATR; 4h: 10.0% of bars over 0.1 ATR; 1d: 85.2% of bars over 0.1 ATR
