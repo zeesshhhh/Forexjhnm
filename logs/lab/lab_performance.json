@@ -1,7 +1,7 @@
 {
- "closed_trades": 5067,
- "last_closed_utc": "2026-11-23T05:25:00+00:00",
- "total_r": -1194.1,
+ "closed_trades": 5072,
+ "last_closed_utc": "2026-11-23T05:30:00+00:00",
+ "total_r": -1198.0,
  "factors": [
   {
    "name": "Setup (timeframe + strategy)",
@@ -24,11 +24,11 @@
     },
     {
      "value": "15m macd",
-     "trades": 156,
+     "trades": 157,
      "wins": 67,
-     "win_rate": 42.9,
-     "total_r": 18.03,
-     "avg_r": 0.116
+     "win_rate": 42.7,
+     "total_r": 16.97,
+     "avg_r": 0.108
     },
     {
      "value": "1h confluence",
@@ -80,11 +80,11 @@
     },
     {
      "value": "5m bollinger",
-     "trades": 1104,
+     "trades": 1106,
      "wins": 372,
-     "win_rate": 33.7,
-     "total_r": -295.85,
-     "avg_r": -0.268
+     "win_rate": 33.6,
+     "total_r": -298.78,
+     "avg_r": -0.27
     },
     {
      "value": "15m confluence",
@@ -96,11 +96,11 @@
     },
     {
      "value": "5m rsi_reversion",
-     "trades": 688,
+     "trades": 689,
      "wins": 227,
-     "win_rate": 33.0,
-     "total_r": -195.19,
-     "avg_r": -0.284
+     "win_rate": 32.9,
+     "total_r": -196.41,
+     "avg_r": -0.285
     },
     {
      "value": "15m rsi_reversion",
@@ -120,11 +120,11 @@
     },
     {
      "value": "5m ema_rsi",
-     "trades": 591,
-     "wins": 193,
-     "win_rate": 32.7,
-     "total_r": -174.22,
-     "avg_r": -0.295
+     "trades": 592,
+     "wins": 194,
+     "win_rate": 32.8,
+     "total_r": -172.91,
+     "avg_r": -0.292
     },
     {
      "value": "4h confluence",
@@ -205,18 +205,18 @@
     },
     {
      "value": "15m",
-     "trades": 1258,
+     "trades": 1259,
      "wins": 419,
      "win_rate": 33.3,
-     "total_r": -203.98,
-     "avg_r": -0.162
+     "total_r": -205.04,
+     "avg_r": -0.163
     },
     {
      "value": "5m",
-     "trades": 3389,
-     "wins": 1132,
+     "trades": 3393,
+     "wins": 1133,
      "win_rate": 33.4,
-     "total_r": -927.2,
+     "total_r": -930.04,
      "avg_r": -0.274
     },
     {
@@ -242,27 +242,27 @@
    "rows": [
     {
      "value": "macd",
-     "trades": 600,
+     "trades": 601,
      "wins": 229,
-     "win_rate": 38.2,
-     "total_r": -61.44,
-     "avg_r": -0.102
+     "win_rate": 38.1,
+     "total_r": -62.5,
+     "avg_r": -0.104
     },
     {
      "value": "ema_rsi",
-     "trades": 872,
-     "wins": 302,
-     "win_rate": 34.6,
-     "total_r": -173.3,
-     "avg_r": -0.199
+     "trades": 873,
+     "wins": 303,
+     "win_rate": 34.7,
+     "total_r": -172.0,
+     "avg_r": -0.197
     },
     {
      "value": "bollinger",
-     "trades": 1676,
+     "trades": 1678,
      "wins": 546,
-     "win_rate": 32.6,
-     "total_r": -423.21,
-     "avg_r": -0.253
+     "win_rate": 32.5,
+     "total_r": -426.14,
+     "avg_r": -0.254
     },
     {
      "value": "confluence",
@@ -274,11 +274,11 @@
     },
     {
      "value": "rsi_reversion",
-     "trades": 1050,
+     "trades": 1051,
      "wins": 326,
      "win_rate": 31.0,
-     "total_r": -305.56,
-     "avg_r": -0.291
+     "total_r": -306.78,
+     "avg_r": -0.292
     }
    ]
   },
@@ -287,18 +287,18 @@
    "rows": [
     {
      "value": "SELL",
-     "trades": 2286,
+     "trades": 2290,
      "wins": 926,
-     "win_rate": 40.5,
-     "total_r": -72.44,
-     "avg_r": -0.032
+     "win_rate": 40.4,
+     "total_r": -77.64,
+     "avg_r": -0.034
     },
     {
      "value": "BUY",
-     "trades": 2781,
-     "wins": 755,
-     "win_rate": 27.1,
-     "total_r": -1121.66,
+     "trades": 2782,
+     "wins": 756,
+     "win_rate": 27.2,
+     "total_r": -1120.36,
      "avg_r": -0.403
     }
    ]
@@ -308,26 +308,26 @@
    "rows": [
     {
      "value": "gold / silver",
-     "trades": 349,
+     "trades": 350,
      "wins": 114,
-     "win_rate": 32.7,
-     "total_r": -36.78,
-     "avg_r": -0.105
+     "win_rate": 32.6,
+     "total_r": -37.84,
+     "avg_r": -0.108
     },
     {
      "value": "major",
-     "trades": 1400,
-     "wins": 503,
+     "trades": 1402,
+     "wins": 504,
      "win_rate": 35.9,
-     "total_r": -259.49,
+     "total_r": -259.87,
      "avg_r": -0.185
     },
     {
      "value": "cross",
-     "trades": 3318,
+     "trades": 3320,
      "wins": 1064,
-     "win_rate": 32.1,
-     "total_r": -897.82,
+     "win_rate": 32.0,
+     "total_r": -900.29,
      "avg_r": -0.271
     }
    ]
@@ -361,11 +361,11 @@
     },
     {
      "value": "AUDNZD",
-     "trades": 149,
+     "trades": 151,
      "wins": 57,
-     "win_rate": 38.3,
-     "total_r": -5.49,
-     "avg_r": -0.037
+     "win_rate": 37.7,
+     "total_r": -7.96,
+     "avg_r": -0.053
     },
     {
      "value": "EURJPY",
@@ -393,10 +393,10 @@
     },
     {
      "value": "EURUSD",
-     "trades": 228,
-     "wins": 86,
-     "win_rate": 37.7,
-     "total_r": -41.82,
+     "trades": 230,
+     "wins": 87,
+     "win_rate": 37.8,
+     "total_r": -42.2,
      "avg_r": -0.183
     },
     {
@@ -416,20 +416,20 @@
      "avg_r": -0.193
     },
     {
-     "value": "XAGUSD",
-     "trades": 174,
-     "wins": 54,
-     "win_rate": 31.0,
-     "total_r": -36.21,
-     "avg_r": -0.208
-    },
-    {
      "value": "AUDJPY",
      "trades": 212,
      "wins": 69,
      "win_rate": 32.5,
      "total_r": -44.75,
      "avg_r": -0.211
+    },
+    {
+     "value": "XAGUSD",
+     "trades": 175,
+     "wins": 54,
+     "win_rate": 30.9,
+     "total_r": -37.27,
+     "avg_r": -0.213
     },
     {
      "value": "NZDUSD",
@@ -582,19 +582,19 @@
    "rows": [
     {
      "value": "bearish engulfing",
-     "trades": 302,
+     "trades": 304,
      "wins": 121,
-     "win_rate": 40.1,
-     "total_r": -18.0,
-     "avg_r": -0.06
+     "win_rate": 39.8,
+     "total_r": -20.9,
+     "avg_r": -0.069
     },
     {
      "value": "bearish candle",
-     "trades": 1009,
+     "trades": 1010,
      "wins": 387,
-     "win_rate": 38.4,
-     "total_r": -74.87,
-     "avg_r": -0.074
+     "win_rate": 38.3,
+     "total_r": -75.93,
+     "avg_r": -0.075
     },
     {
      "value": "bearish marubozu",
@@ -630,19 +630,19 @@
     },
     {
      "value": "bullish marubozu",
-     "trades": 240,
-     "wins": 83,
-     "win_rate": 34.6,
-     "total_r": -65.2,
-     "avg_r": -0.272
+     "trades": 241,
+     "wins": 84,
+     "win_rate": 34.9,
+     "total_r": -63.89,
+     "avg_r": -0.265
     },
     {
      "value": "doji",
-     "trades": 467,
+     "trades": 468,
      "wins": 146,
-     "win_rate": 31.3,
-     "total_r": -128.96,
-     "avg_r": -0.276
+     "win_rate": 31.2,
+     "total_r": -130.21,
+     "avg_r": -0.278
     },
     {
      "value": "bullish candle",
@@ -683,19 +683,19 @@
     },
     {
      "value": "neutral",
-     "trades": 1105,
+     "trades": 1106,
      "wins": 361,
-     "win_rate": 32.7,
-     "total_r": -261.2,
-     "avg_r": -0.236
+     "win_rate": 32.6,
+     "total_r": -262.46,
+     "avg_r": -0.237
     },
     {
      "value": "confirms",
-     "trades": 3428,
-     "wins": 1111,
+     "trades": 3432,
+     "wins": 1112,
      "win_rate": 32.4,
-     "total_r": -894.93,
-     "avg_r": -0.261
+     "total_r": -897.58,
+     "avg_r": -0.262
     }
    ]
   },
@@ -704,27 +704,27 @@
    "rows": [
     {
      "value": "with both trends",
-     "trades": 1802,
-     "wins": 697,
+     "trades": 1804,
+     "wins": 698,
      "win_rate": 38.7,
-     "total_r": -145.04,
+     "total_r": -144.8,
      "avg_r": -0.08
     },
     {
      "value": "mixed",
-     "trades": 867,
+     "trades": 869,
      "wins": 280,
-     "win_rate": 32.3,
-     "total_r": -242.4,
-     "avg_r": -0.28
+     "win_rate": 32.2,
+     "total_r": -244.87,
+     "avg_r": -0.282
     },
     {
      "value": "against both trends",
-     "trades": 2398,
+     "trades": 2399,
      "wins": 704,
-     "win_rate": 29.4,
-     "total_r": -806.65,
-     "avg_r": -0.336
+     "win_rate": 29.3,
+     "total_r": -808.33,
+     "avg_r": -0.337
     }
    ]
   },
@@ -733,27 +733,27 @@
    "rows": [
     {
      "value": "neutral (45-55)",
-     "trades": 728,
+     "trades": 729,
      "wins": 283,
-     "win_rate": 38.9,
-     "total_r": -53.92,
-     "avg_r": -0.074
+     "win_rate": 38.8,
+     "total_r": -54.98,
+     "avg_r": -0.075
     },
     {
      "value": "strong (55-70)",
-     "trades": 1440,
-     "wins": 514,
+     "trades": 1443,
+     "wins": 515,
      "win_rate": 35.7,
-     "total_r": -241.88,
-     "avg_r": -0.168
+     "total_r": -243.48,
+     "avg_r": -0.169
     },
     {
      "value": "overbought (>70)",
-     "trades": 121,
+     "trades": 122,
      "wins": 42,
-     "win_rate": 34.7,
-     "total_r": -24.92,
-     "avg_r": -0.206
+     "win_rate": 34.4,
+     "total_r": -26.17,
+     "avg_r": -0.214
     },
     {
      "value": "oversold (<30)",
@@ -778,11 +778,11 @@
    "rows": [
     {
      "value": "normal",
-     "trades": 3759,
+     "trades": 3762,
      "wins": 1259,
      "win_rate": 33.5,
-     "total_r": -830.08,
-     "avg_r": -0.221
+     "total_r": -833.61,
+     "avg_r": -0.222
     },
     {
      "value": "high",
@@ -794,11 +794,11 @@
     },
     {
      "value": "low",
-     "trades": 440,
-     "wins": 145,
+     "trades": 442,
+     "wins": 146,
      "win_rate": 33.0,
-     "total_r": -167.61,
-     "avg_r": -0.381
+     "total_r": -167.99,
+     "avg_r": -0.38
     }
    ]
   },
@@ -839,11 +839,11 @@
     },
     {
      "value": "Monday",
-     "trades": 445,
-     "wins": 139,
-     "win_rate": 31.2,
-     "total_r": -145.06,
-     "avg_r": -0.326
+     "trades": 450,
+     "wins": 140,
+     "win_rate": 31.1,
+     "total_r": -148.97,
+     "avg_r": -0.331
     },
     {
      "value": "Sunday",
@@ -876,11 +876,11 @@
     },
     {
      "value": "Asia",
-     "trades": 1381,
-     "wins": 457,
-     "win_rate": 33.1,
-     "total_r": -332.75,
-     "avg_r": -0.241
+     "trades": 1386,
+     "wins": 458,
+     "win_rate": 33.0,
+     "total_r": -336.66,
+     "avg_r": -0.243
     },
     {
      "value": "London",
@@ -913,10 +913,10 @@
    "rows": [
     {
      "value": "not recorded",
-     "trades": 5067,
-     "wins": 1681,
+     "trades": 5072,
+     "wins": 1682,
      "win_rate": 33.2,
-     "total_r": -1194.1,
+     "total_r": -1198.0,
      "avg_r": -0.236
     }
    ]
