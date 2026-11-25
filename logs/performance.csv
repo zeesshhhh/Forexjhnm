@@ -3,17 +3,17 @@ Timeframe,5m,4,4,100.0,6.25,1.562
 Timeframe,4h,6,3,50.0,3.0,0.5
 Timeframe,15m,12,3,25.0,-3.0,-0.25
 Timeframe,1h,11,2,18.2,-5.0,-0.455
-Timeframe,1d,1,0,0.0,-1.0,-1.0
+Timeframe,1d,2,0,0.0,-2.0,-1.0
 Strategy,rsi_reversion,4,2,50.0,2.0,0.5
 Strategy,macd,5,2,40.0,1.0,0.2
-Strategy,ema_rsi,11,4,36.4,1.0,0.091
+Strategy,ema_rsi,12,4,33.3,0.0,0.0
 Strategy,bollinger,10,3,30.0,-1.0,-0.1
 Strategy,confluence,4,1,25.0,-2.75,-0.688
 Buy or sell,SELL,17,8,47.1,5.25,0.309
-Buy or sell,BUY,17,4,23.5,-5.0,-0.294
+Buy or sell,BUY,18,4,22.2,-6.0,-0.333
 Pair type,gold / silver,4,3,75.0,5.0,1.25
 Pair type,major,5,2,40.0,1.0,0.2
-Pair type,cross,25,7,28.0,-5.75,-0.23
+Pair type,cross,26,7,26.9,-6.75,-0.26
 Pair,XAUUSD,1,1,100.0,2.0,2.0
 Pair,EURCHF,1,1,100.0,2.0,2.0
 Pair,XAGUSD,3,2,66.7,3.0,1.0
@@ -28,23 +28,24 @@ Pair,EURJPY,2,0,0.0,-2.0,-1.0
 Pair,CADCHF,2,0,0.0,-2.0,-1.0
 Pair,AUDJPY,1,0,0.0,-1.0,-1.0
 Pair,CADJPY,1,0,0.0,-1.0,-1.0
+Pair,GBPCHF,1,0,0.0,-1.0,-1.0
 Pair,EURCAD,1,0,0.0,-1.0,-1.0
 Pair,EURAUD,1,0,0.0,-1.0,-1.0
 Pair,GBPUSD,1,0,0.0,-1.0,-1.0
 Pair,CHFJPY,1,0,0.0,-1.0,-1.0
 Pair,AUDNZD,1,0,0.0,-1.0,-1.0
-Candle pattern,not recorded,33,12,36.4,1.25,0.038
+Candle pattern,not recorded,34,12,35.3,0.25,0.007
 Candle pattern,hammer,1,0,0.0,-1.0,-1.0
-Candle vs trade,not recorded,33,12,36.4,1.25,0.038
+Candle vs trade,not recorded,34,12,35.3,0.25,0.007
 Candle vs trade,confirms,1,0,0.0,-1.0,-1.0
-Market direction,not recorded,33,12,36.4,1.25,0.038
+Market direction,not recorded,34,12,35.3,0.25,0.007
 Market direction,mixed,1,0,0.0,-1.0,-1.0
-RSI zone,not recorded,33,12,36.4,1.25,0.038
+RSI zone,not recorded,34,12,35.3,0.25,0.007
 RSI zone,weak (30-45),1,0,0.0,-1.0,-1.0
-Volatility,not recorded,33,12,36.4,1.25,0.038
+Volatility,not recorded,34,12,35.3,0.25,0.007
 Volatility,normal,1,0,0.0,-1.0,-1.0
-Weekday,not recorded,33,12,36.4,1.25,0.038
+Weekday,not recorded,34,12,35.3,0.25,0.007
 Weekday,Wednesday,1,0,0.0,-1.0,-1.0
-Session,not recorded,33,12,36.4,1.25,0.038
+Session,not recorded,34,12,35.3,0.25,0.007
 Session,daily candle,1,0,0.0,-1.0,-1.0
-High-impact news in next 24h,not recorded,34,12,35.3,0.25,0.007
+High-impact news in next 24h,not recorded,35,12,34.3,-0.75,-0.021
