@@ -1,6 +1,56 @@
 {
- "updated": "2026-11-26T00:05:44.306268+00:00",
+ "updated": "2026-11-28T00:01:21.419976+00:00",
  "signals": [
+  {
+   "id": "AUDCAD|1d|2026-11-27T00:00:00+00:00",
+   "pair": "AUDCAD",
+   "tf": "1d",
+   "side": "BUY",
+   "strategy": "bollinger",
+   "entry": 0.945268,
+   "sl": 0.933951,
+   "tp": 0.967902,
+   "rsi": 24.9,
+   "decimals": 5,
+   "bar_time": "2026-11-27T00:00:00+00:00",
+   "stats": {
+    "trades": 33,
+    "win_rate": 33.3,
+    "profit_factor": 1.0
+   },
+   "indicators": {
+    "candle_time": "2026-11-27T00:00:00+00:00",
+    "close": 0.945268,
+    "rsi14": 24.9,
+    "ema9": 0.952818,
+    "ema21": 0.96304,
+    "ema200": 0.972696,
+    "trend": "down",
+    "macd": -0.0100131,
+    "macd_signal": -0.0078892,
+    "macd_hist": -0.0021239,
+    "atr14": 0.0075447,
+    "atr_pips": 75.4,
+    "bb_upper": 0.989805,
+    "bb_mid": 0.965047,
+    "bb_lower": 0.940289
+   },
+   "features": {
+    "pattern": "shooting star",
+    "pattern_vs_trade": "against",
+    "trend": "down",
+    "bigger_trend": "up",
+    "direction_vs_trade": "mixed",
+    "rsi_zone": "oversold (<30)",
+    "volatility": "high",
+    "weekday": "Friday",
+    "session": "daily candle",
+    "news_next_24h": "not set up",
+    "news_prev_24h": "not set up",
+    "news_titles": ""
+   },
+   "status": "open"
+  },
   {
    "id": "AUDJPY|1d|2026-11-18T00:00:00+00:00",
    "pair": "AUDJPY",
